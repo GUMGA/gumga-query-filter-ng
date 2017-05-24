@@ -15,9 +15,9 @@
           <ul uib-dropdown-menu role="menu" aria-labelledby="single-button" class="dropdown-menu-search">
             <li role="menuitem" ng-repeat="(key, $value) in ctrl.mapFields">
               <a class="no-padding-search-fields">
-                <label ng-click="$event.stopPropagation()">
+                <label ng-click="ctrl.checkFields($event, $value.field)">
                   <input type="checkbox" ng-model="$value.checkbox" />
-                  <span><b>{{::$value.label}}</b></span>
+                  {{::$value.label}}
                 </label>
               </a>
             </li>
@@ -74,7 +74,7 @@
           for(var first in ctrl.mapFields) break
           if(first) ctrl.mapFields[first].checkbox = true
         }
-       })
+      })
 
       ctrl.compileFilter      = compileFilter
       ctrl.doSearch           = doSearch
@@ -112,6 +112,14 @@
       $scope.$watch('openFilter', (open) => {
         if(typeof open !== 'undefined') $scope.$broadcast('openOrCloseFilter', open);
       })
+
+      ctrl.checkFields = (event, field) => {
+        let someChecked = Object.keys(ctrl.mapFields).filter(value => !!ctrl.mapFields[value].checkbox)
+        if (someChecked.length == 1 && someChecked[0] == field) {
+          event.preventDefault()
+        }
+        event.stopPropagation()
+      }
 
       function proxyFn($value){
         return $q.when(ctrl.savedFilters({ page: location.hash }))

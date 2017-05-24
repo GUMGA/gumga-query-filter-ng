@@ -12,29 +12,37 @@
 
 <body data-ng-controller="ctrl">
 
-  <h1>Gumga Query Filter</h1>
-  <form name="Example">
-    <form name="Example">
-      <gumga-query search="pessoas.methods.search(field,param)" advanced-search="pessoas.methods.advancedSearch(param)" search-text="Pesquisar"
-        saved-filters="pessoas.methods.getQuery(page)" save-query="pessoas.methods.postQuery(query, name)">
-        <search-field field="name" label="Nome" select="true"></search-field>
-        <search-field field="age" label="Idade"></search-field>
-        <advanced-search-field type="string" label="Nome" field="nome"></advanced-search-field>
-        <advanced-search-field type="number" label="Idade" field="idade"></advanced-search-field>
-        <advanced-search-field type="float" label="Peso" field="peso"></advanced-search-field>
-        <advanced-search-field type="money" label="Preço" field="preco"></advanced-search-field>
-        <advanced-search-field type="cpf" label="CPF" field="cpf"></advanced-search-field>
-        </gumga-query>
-    </form>
-  </form>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>Gumga Query Filter</h1>
+        <form name="Example">
+          <form name="Example">
+            <gumga-query search="pessoas.methods.search(field,param)" advanced-search="pessoas.methods.advancedSearch(param)" search-text="Pesquisar"
+              saved-filters="pessoas.methods.getQuery(page)" save-query="pessoas.methods.postQuery(query, name)">
+              <search-field field="name" label="Nome"></search-field>
+              <search-field field="age" label="Idade" select="true"></search-field>
+              <search-field field="agee" label="Idadee"></search-field>
+              <search-field field="aged" label="Idaded"></search-field>
+              <advanced-search-field type="string" label="Nome" field="nome"></advanced-search-field>
+              <advanced-search-field type="number" label="Idade" field="idade"></advanced-search-field>
+              <advanced-search-field type="float" label="Peso" field="peso"></advanced-search-field>
+              <advanced-search-field type="money" label="Preço" field="preco"></advanced-search-field>
+              <advanced-search-field type="cpf" label="CPF" field="cpf"></advanced-search-field>
+              </gumga-query>
+          </form>
+        </form>
+      </div>
+    </div>
+  </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script src="../node_modules/angular/angular.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.5.0/ui-bootstrap-tpls.min.js"></script>
-  <script src="../node_modules/gumga-rest-ng/dist/gumga-rest.min.js"></script>
-  <script src="../node_modules/gumga-controller-ng/dist/gumga-controller.min.js"></script>
-  <script src="../node_modules/gumga-generic-filter-ng/dist/gumga-generic-filter.js"></script>
-  <script src="../dist/gumga-query-filter.js"></script>
+  <script src="https://unpkg.com/gumga-rest-ng@1.0.0/dist/gumga-rest.min.js"></script>
+  <script src="https://unpkg.com/gumga-controller-ng@1.0.0/dist/gumga-controller.min.js"></script>
+  <script src="https://unpkg.com/gumga-generic-filter-ng@1.0.0/dist/gumga-generic-filter.js"></script>
+  <script src="../dist/gumga-query-filter.min.js"></script>
   <script>
     angular
       .module('app', ['ui.bootstrap', 'gumga.rest', 'gumga.controller', 'gumga.genericfilter', 'gumga.queryfilter'])
