@@ -10,7 +10,6 @@
     </div>
     <div id="replace"></div>
     `
-
     return {
       restrict: 'E',
       template: template,
@@ -44,12 +43,11 @@
           let template  = `<gumga-filter-core ng-show="isOpen" search="proxySearch(param)" ${$attrs.saveQuery ? 'save-query="saveQuery(query, name)"' : ''}>
                             ${$scope.possibleAdvancedFields.reduce(((prev, next) => prev += next), '')}
                           </gumga-filter-core>`,
-              element   = angular.element(document.getElementById($scope.containerId))          
+              element   = angular.element(document.getElementById($scope.containerId))
 
           element.replaceWith($compile(template)($scope))
         })
       }
     }
   }
-  angular.module('gumga.queryfilter.filter.directive', [])
-  .directive('gumgaFilter', Filter)
+  angular.module('gumga.queryfilter.filter.directive', []).directive('gumgaFilter', Filter)

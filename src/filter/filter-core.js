@@ -566,4 +566,3 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory)
 }
 angular.module('gumga.queryfilter.filter.core', [])
   .directive('gumgaFilterCore', Filter)
-

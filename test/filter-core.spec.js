@@ -7,7 +7,7 @@ describe('COMPONENTE: FilterCore', () => {
       searchFieldWithNoAttributeElement   = angular.element(`<gumga-filter-core search="foo(param)"> <advanced-search-field></advanced-search-field> </gumga-filter-core>`),
       searchFieldWithNoTypeElement        = angular.element(`<gumga-filter-core search="foo(param)"> <advanced-search-field field="name"></advanced-search-field> </gumga-filter-core>`),
       searchFieldWithInvalidTypeElement   = angular.element(`<gumga-filter-core search="foo(param)"> <advanced-search-field field="name" type="xablau"></advanced-search-field> </gumga-filter-core>`),
-      searchFieldWithValidTypeElement     = angular.element(`<gumga-filter-core search="foo(param)"> <advanced-search-field field="name" type="string"></advanced-search-field> </gumga-filter-core>`),
+      searchFieldWithValidTypeElement     = angular.element(`<gumga-filter-core search="foo(param)"> <advanced-search-field field="name" type="string" label="Nome"></advanced-search-field> </gumga-filter-core>`),
       searchFieldWithStaticLabelElement   = angular.element(`<gumga-filter-core search="foo(param)"> <advanced-search-field field="name" type="string" label="Nome"></advanced-search-field> </gumga-filter-core>`),
       searchFieldWithDynamicLabelElement  = angular.element(`<gumga-filter-core search="foo(param)"> <advanced-search-field field="name" type="string" label="{{ name | lowercase}}"></advanced-search-field> </gumga-filter-core>`),
       searchFieldWithOrder                = angular.element(`<gumga-filter-core search="foo(param)"> <advanced-search-field field="age" type="number" label="Idade"></advanced-search-field><advanced-search-field field="name" type="string" label="{{ name | lowercase}}"></advanced-search-field> </gumga-filter-core>`)
@@ -17,7 +17,7 @@ describe('COMPONENTE: FilterCore', () => {
             NOTYPE_ERR  = `É necessário atribuir um valor ao atributo TYPE da tag ADVANCED-SEARCH-FIELD.`,
             SEARCH_ERR  = `É necessário atribuir uma função para o atributo SEARCH. [search="foo()"]`
 
-  beforeEach(module('gumga.filter'))
+  beforeEach(angular.mock.module('gumga.queryfilter'))
 
   beforeEach(
     inject(($rootScope, _$compile_, _HQLFactory_) => {
@@ -82,28 +82,24 @@ describe('COMPONENTE: FilterCore', () => {
     it(`Should get the attributes right if there's no error`, () => {
       $compile(searchFieldWithValidTypeElement)(scope)
       let isolated = searchFieldWithValidTypeElement.isolateScope()
-      isolated.$apply()
-      expect(isolated._attributes[0]).toEqual({ field: 'name', type: 'string', label: 'Name', extraProperties: undefined})
+      expect(isolated._attributes[0]).toEqual({ field: 'name', type: 'string', label: 'Nome', extraProperties: undefined})
     })
 
     it(`Should get the attributes right if there's a static label passed`, () => {
       $compile(searchFieldWithStaticLabelElement)(scope)
       let isolated = searchFieldWithStaticLabelElement.isolateScope()
-      isolated.$apply()
       expect(isolated._attributes[0]).toEqual({ field: 'name', type: 'string', label: 'Nome', extraProperties: undefined})
     })
 
     it(`Should get the attributes right if there's a dynamic label passed`, () => {
       $compile(searchFieldWithDynamicLabelElement)(scope)
       let isolated = searchFieldWithDynamicLabelElement.isolateScope()
-      isolated.$apply()
       expect(isolated._attributes[0]).toEqual({ field: 'name', type: 'string', label: 'nome', extraProperties: undefined})
     })
 
     it('Should get both attributes in the right order', () => {
       $compile(searchFieldWithOrder)(scope)
       let isolated = searchFieldWithOrder.isolateScope()
-      isolated.$apply()
       expect(isolated._attributes[0]).toEqual({ field: 'age', type: 'number', label: 'Idade', extraProperties: undefined})
       expect(isolated._attributes[1]).toEqual({ field: 'name', type: 'string', label: 'nome', extraProperties: undefined})
     })

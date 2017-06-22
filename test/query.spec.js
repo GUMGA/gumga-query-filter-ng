@@ -10,9 +10,9 @@ describe('COMPONENT: GumgaQuery', function() {
       gumgaQueryWithAttribute         = template(`<gumga-query search="foo(name, param)"> <search-field field="name" select="false" label="Nome"> </search-field> </gumga-query>`),
       gumgaQueryWithAttributeNoLabel  = template(`<gumga-query search="foo(name, param)"> <search-field field="name" select="false"> </search-field> </gumga-query>`),
       gumgaQueryWithAttributeNoField  = template(`<gumga-query search="foo(name, param)"> <search-field select="false"> </search-field> </gumga-query>`)
+    
 
-
-  beforeEach(module('gumga.query'))
+  beforeEach(angular.mock.module('gumga.queryfilter'))
 
   beforeEach(inject((_$compile_, $rootScope) => {
     $compile          = _$compile_
@@ -34,7 +34,6 @@ describe('COMPONENT: GumgaQuery', function() {
       $compile(gumgaQueryWithSearch)(scope)
       expect(console.error).not.toHaveBeenCalledWith('É necessário passar uma função para o atributo "search". [search="foo(field, param)"]')
     })
-    //
     it('Should call the scope.foo when i call controller.search', () => {
       spyOn(scope, 'foo')
       $compile(gumgaQueryWithSearch)(scope)
@@ -42,8 +41,6 @@ describe('COMPONENT: GumgaQuery', function() {
       controller.search()
       expect(scope.foo).toHaveBeenCalled()
     })
-    //
-    //
     it('Should call the scope.fooFilters when i call controller.savedFilters', () => {
       spyOn(scope, 'fooFilters')
       $compile(gumgaQueryWithSavedFilters)(scope)
@@ -52,7 +49,7 @@ describe('COMPONENT: GumgaQuery', function() {
       expect(scope.fooFilters).toHaveBeenCalled()
     })
   })
-//
+
   describe('Getting the attributes', () => {
     it('Should get the "select", "field" and "label" for the search-field', () => {
       $compile(gumgaQueryWithAttribute)(scope)
@@ -88,7 +85,6 @@ describe('COMPONENT: GumgaQuery', function() {
       controller.doSearch('Jonathan da nova Geração')
       expect(scope.foo).not.toHaveBeenCalled()
     })
-
 
   })
 //
