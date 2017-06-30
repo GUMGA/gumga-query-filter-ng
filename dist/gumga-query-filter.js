@@ -147,23 +147,24 @@ function Search($q, $timeout, $compile, $interpolate) {
       }
     });
 
-    ctrl.compileFilter = compileFilter;
-    ctrl.doSearch = doSearch;
-    ctrl.proxyFn = proxyFn;
-    ctrl.filterSelect = filterSelect;
-    ctrl.advancedSearch = hasAttr('advancedSearch') ? ctrl.advancedSearch : null;
-    ctrl.containerAdvanced = hasAttr('containerAdvanced') ? ctrl.containerAdvanced : "replaceFilter";
-    ctrl.savedFilters = hasAttr('savedFilters') ? ctrl.savedFilters : angular.noop;
-    ctrl.searchText = hasAttr('searchText') ? $attrs['searchText'] : ' ';
-    ctrl.proxySearch = function (param) {
-      return ctrl.advancedSearch({ param: param });
+    ctrl.$onInit = function () {
+      ctrl.compileFilter = compileFilter;
+      ctrl.doSearch = doSearch;
+      ctrl.proxyFn = proxyFn;
+      ctrl.filterSelect = filterSelect;
+      ctrl.advancedSearch = hasAttr('advancedSearch') ? ctrl.advancedSearch : null;
+      ctrl.containerAdvanced = hasAttr('containerAdvanced') ? ctrl.containerAdvanced : "replaceFilter";
+      ctrl.savedFilters = hasAttr('savedFilters') ? ctrl.savedFilters : angular.noop;
+      ctrl.searchText = hasAttr('searchText') ? $attrs['searchText'] : ' ';
+      ctrl.proxySearch = function (param) {
+        return ctrl.advancedSearch({ param: param });
+      };
+      ctrl.hasQuerySaved = !!$attrs.savedFilters;
+      $scope.proxySave = function (query, name) {
+        return ctrl.saveQuery({ query: query, name: name });
+      };
+      if (ctrl.advancedSearch) ctrl.compileFilter();
     };
-    ctrl.hasQuerySaved = !!$attrs.savedFilters;
-    $scope.proxySave = function (query, name) {
-      return ctrl.saveQuery({ query: query, name: name });
-    };
-
-    if (ctrl.advancedSearch) ctrl.compileFilter();
 
     function compileFilter() {
       var template = '<gumga-filter-core ng-show="openFilter" is-open="true" search="ctrl.proxySearch(param)" ' + ($attrs.saveQuery ? 'save-query="saveQuery(query, name)"' : '') + 'is-query="true">' + ctrl.possibleAdvancedFields.reduce(function (prev, next) {
@@ -326,7 +327,7 @@ function HQLFactory($filter) {
       return DATE_REGEX.test($filter('date')(date, 'dd/MM/yyyy'));
     },
     defaultCondition: hqlObjectCreator(['date_eq']),
-    conditions: hqlObjectCreator(['date_eq', 'date_ne', 'gt', 'ge', 'lt', 'le']),
+    conditions: hqlObjectCreator(['date_eq', 'date_ne', 'date_lt', 'date_gt']),
     template: '<div class="input-group">\n                    <input type="text" ng-keyup="goSearch($event)" ng-model="$value.query.value" gumga-mask="99/99/9999" class="form-control" required  style=" width: 150px;height: 40px;"/>\n                    <div class="input-group-addon">\n                        <i ng-show="validator($value.query.value) && $value.query.value.length > 0" class="glyphicon glyphicon-ok" style="color:green"></i></span>\n                        <i ng-show="!validator($value.query.value) || !$value.query.value" class="glyphicon glyphicon-remove" style="color:red"></i>\n                    </div>\n                    <div class="input-group-addon">\n                        <button ng-click="callSearch($event, \'btn\')" class="btn btn-default">Buscar</button>\n                    </div>\n              </div>'
   };
 
@@ -396,7 +397,10 @@ function HQLFactory($filter) {
     hqlObjects['in'] = { hql: ' in ', label: ' em', before: ' in (', after: ')' };
     hqlObjects['is'] = { hql: ' is ', label: ' est\xE1 ', before: ' is ', after: '' };
     hqlObjects['date_eq'] = { hql: ' eq ', label: ' igual ', before: ' >= ', after: '' };
-    hqlObjects['date_ne'] = { hql: ' ne ', label: ' diferente de ', before: ' <= ', after: ''
+    hqlObjects['date_ne'] = { hql: ' ne ', label: ' diferente de ', before: ' <= ', after: '' };
+    hqlObjects['date_lt'] = { hql: ' ld ', label: ' anterior a ', before: ' <= ', after: '' };
+    hqlObjects['date_gt'] = { hql: ' gd ', label: ' posterior a ', before: ' >= ', after: ''
+
       // hqlObjects['date_eq']       = { hql: ` date_eq`       , label:  ` no dia `        , before: ` `}
     };return hqls.map(function (value) {
       return hqlObjects[value];
@@ -422,8 +426,8 @@ function HQLFactory($filter) {
             value = '' + date[4] + date[5] + date[6] + date[7] + '-' + date[2] + date[3] + '-' + date[0] + date[1];
 
             // if (mapObj[val].query.condition.hql == ' eq ' || mapObj[val].query.condition.hql == ' ne ') {
-            var valueBefore = '\'' + value + ' 00:00:00\'',
-                valueAfter = '\'' + value + ' 23:59:59\'';
+            var valueBefore = 'to_timestamp(\'' + value + ' 00:00:00\',\'yyyy/MM/dd HH24:mi:ss\')',
+                valueAfter = 'to_timestamp(\'' + value + ' 23:59:59\',\'yyyy/MM/dd HH24:mi:ss\')';
 
             switch (mapObj[val].query.condition.hql) {
               case ' eq ':
@@ -432,11 +436,11 @@ function HQLFactory($filter) {
               case ' ne ':
                 value = valueBefore + ' OR ' + attribute + ' >= ' + valueAfter;
                 break;
-              case ' le ':
+              case ' ld ':
                 value = valueAfter;
                 break;
-              case ' gt ':
-                value = valueAfter;
+              case ' gd ':
+                value = valueBefore;
                 break;
             }
             // }

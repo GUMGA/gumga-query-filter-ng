@@ -76,24 +76,27 @@
         }
       })
 
-      ctrl.compileFilter      = compileFilter
-      ctrl.doSearch           = doSearch
-      ctrl.proxyFn            = proxyFn
-      ctrl.filterSelect       = filterSelect
-      ctrl.advancedSearch     = hasAttr('advancedSearch') ? ctrl.advancedSearch   : null
-      ctrl.containerAdvanced  = hasAttr('containerAdvanced') ? ctrl.containerAdvanced : "replaceFilter"
-      ctrl.savedFilters       = hasAttr('savedFilters')   ? ctrl.savedFilters     : angular.noop
-      ctrl.searchText         = hasAttr('searchText')     ? $attrs['searchText']  : ' '
-      ctrl.proxySearch        = (param) => ctrl.advancedSearch({ param })
-      ctrl.hasQuerySaved      = !!$attrs.savedFilters
-      $scope.proxySave        = (query, name) => ctrl.saveQuery({ query, name })
 
-      if(ctrl.advancedSearch) ctrl.compileFilter()
+
+      ctrl.$onInit = () => {
+        ctrl.compileFilter      = compileFilter
+        ctrl.doSearch           = doSearch
+        ctrl.proxyFn            = proxyFn
+        ctrl.filterSelect       = filterSelect
+        ctrl.advancedSearch     = hasAttr('advancedSearch') ? ctrl.advancedSearch   : null
+        ctrl.containerAdvanced  = hasAttr('containerAdvanced') ? ctrl.containerAdvanced : "replaceFilter"
+        ctrl.savedFilters       = hasAttr('savedFilters')   ? ctrl.savedFilters     : angular.noop
+        ctrl.searchText         = hasAttr('searchText')     ? $attrs['searchText']  : ' '
+        ctrl.proxySearch        = (param) => ctrl.advancedSearch({ param })
+        ctrl.hasQuerySaved      = !!$attrs.savedFilters
+        $scope.proxySave        = (query, name) => ctrl.saveQuery({ query, name })
+        if(ctrl.advancedSearch) ctrl.compileFilter()
+      }
 
       function compileFilter(){
         let template  = `<gumga-filter-core ng-show="openFilter" is-open="true" search="ctrl.proxySearch(param)" ${$attrs.saveQuery ? 'save-query="saveQuery(query, name)"' : ''}is-query="true">${ctrl.possibleAdvancedFields.reduce(((prev, next) => prev += next), '')}</gumga-filter-core>`,
 
-        element   = angular.element(document.getElementById(ctrl.containerAdvanced))
+        element   = angular.element(document.getElementById(ctrl.containerAdvanced));
         element.replaceWith($compile(template)($scope))
       }
 

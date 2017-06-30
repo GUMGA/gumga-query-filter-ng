@@ -47,7 +47,7 @@
     angular
       .module('app', ['ui.bootstrap', 'gumga.rest', 'gumga.controller', 'gumga.genericfilter', 'gumga.queryfilter'])
       .config(function ($httpProvider) {
-        $httpProvider.defaults.headers.common['gumgaToken'] = 'homologacaokids'
+        $httpProvider.defaults.headers.common['gumgaToken'] = 'williankids'
       })
       .controller('ctrl', ['gumgaController', 'GumgaRest', '$scope', '$http', function (gumgaController, GumgaRest, $scope, $http) {
         var PessoaService = new GumgaRest('http://192.168.25.250/gileadeweb-api/api/pessoacadastro');
