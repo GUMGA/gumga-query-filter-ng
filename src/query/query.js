@@ -22,7 +22,7 @@
               </a>
             </li>
           </ul>
-          <button class="btn btn-default" ng-click="openFilter = !openFilter">
+          <button class="btn btn-default" ng-click="openFilter = !openFilter" type="button">
             <span class="glyphicon glyphicon-filter"></span>
           </button>
           <button class="btn btn-primary" type="button" ng-click="ctrl.doSearch(ctrl.searchField)">
@@ -101,15 +101,15 @@
       }
 
       function doSearch(param, event = { keyCode: 13 }, inputType){
-        if(event.keyCode !== 13 || inputType == 'TYPEAHEAD') return;
-        let field = Object
-                    .keys(ctrl.mapFields)
-                    .filter(value => !!ctrl.mapFields[value].checkbox)
-                    .reduce((prev, next) => (prev += next.concat(',')), '')
-                    .slice(0, -1)
+          if(event.keyCode !== 13 || inputType == 'TYPEAHEAD') return;
+          let field = Object
+                      .keys(ctrl.mapFields)
+                      .filter(value => !!ctrl.mapFields[value].checkbox)
+                      .reduce((prev, next) => (prev += next.concat(',')), '')
+                      .slice(0, -1)
 
-        if(field.length === 0) return
-        ctrl.search({ field, param })
+          if(field.length === 0) return;
+          ctrl.search({ field, param })
       }
 
       $scope.$watch('openFilter', (open) => {
