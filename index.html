@@ -23,11 +23,12 @@
               <!-- <search-field field="name" label="Nome"></search-field>
               <search-field field="agee" label="Idadee"></search-field>
               <search-field field="aged" label="Idaded"></search-field> -->
-              <advanced-search-field type="string" label="Nome" field="nome"></advanced-search-field>
-              <advanced-search-field type="number" label="Idade" field="idade"></advanced-search-field>
-              <advanced-search-field type="float" label="Peso" field="peso"></advanced-search-field>
-              <advanced-search-field type="money" label="Preço" field="preco"></advanced-search-field>
-              <advanced-search-field type="cpf" label="CPF" field="cpf"></advanced-search-field>
+              <advanced-search-field type="string" label="String" field="nome"></advanced-search-field>
+              <advanced-search-field type="number" label="Number" field="version"></advanced-search-field>
+              <advanced-search-field type="float" label="Float" field="qtdFaltas"></advanced-search-field>
+              <advanced-search-field type="money" label="Money" field="qtdFaltas"></advanced-search-field>
+              <advanced-search-field type="cpf" label="CPF" field="telefonePrincipal"></advanced-search-field>
+              <advanced-search-field type="cnpj" label="CNPJ" field="telefonePrincipal"></advanced-search-field>
               </gumga-query>
         </form>
       </div>
@@ -45,7 +46,7 @@
     angular
       .module('app', ['ui.bootstrap', 'gumga.rest', 'gumga.controller', 'gumga.genericfilter', 'gumga.queryfilter'])
       .config(function ($httpProvider) {
-        $httpProvider.defaults.headers.common['gumgaToken'] = 'williankids'
+        $httpProvider.defaults.headers.common['gumgaToken'] = 'homologacaokids'
       })
       .controller('ctrl', ['gumgaController', 'GumgaRest', '$scope', '$http', function (gumgaController, GumgaRest, $scope, $http) {
         var PessoaService = new GumgaRest('http://192.168.25.250/gileadeweb-api/api/pessoacadastro');

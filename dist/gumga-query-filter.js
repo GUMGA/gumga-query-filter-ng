@@ -384,16 +384,16 @@ function HQLFactory($filter) {
     var hqls = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
     var hqlObjects = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-    hqlObjects['contains'] = { hql: ' contains ', label: ' cont\xE9m ', before: ' like \'%', after: '%\'' };
-    hqlObjects['not_contains'] = { hql: ' not_contains ', label: ' n\xE3o cont\xE9m ', before: ' not like \'%', after: '%\'' };
-    hqlObjects['starts_with'] = { hql: ' starts_with ', label: ' come\xE7a com ', before: ' like \'', after: '%\'' };
-    hqlObjects['ends_with'] = { hql: ' ends_with ', label: ' termina com ', before: ' like \'%', after: '\'' };
-    hqlObjects['eq'] = { hql: ' eq ', label: ' igual ', before: ' = \'', after: '\'' };
-    hqlObjects['ne'] = { hql: ' ne ', label: ' diferente de ', before: ' != \'', after: '\'' };
-    hqlObjects['ge'] = { hql: ' ge ', label: ' maior igual ', before: ' >= \'', after: '\'' };
+    hqlObjects['contains'] = { hql: ' contains ', label: ' cont\xE9m ', before: ' like upper(\'%', after: '%\')' };
+    hqlObjects['not_contains'] = { hql: ' not_contains ', label: ' n\xE3o cont\xE9m ', before: ' not like upper(\'%', after: '%\')' };
+    hqlObjects['starts_with'] = { hql: ' starts_with ', label: ' come\xE7a com ', before: ' like upper(\'', after: '%\')' };
+    hqlObjects['ends_with'] = { hql: ' ends_with ', label: ' termina com ', before: ' like upper(\'%', after: '\')' };
+    hqlObjects['eq'] = { hql: ' eq ', label: ' igual ', before: ' = upper(\'', after: '\')' };
+    hqlObjects['ne'] = { hql: ' ne ', label: ' diferente de ', before: ' != upper(\'', after: '\')' };
+    hqlObjects['ge'] = { hql: ' ge ', label: ' maior igual ', before: ' >= upper(\'', after: '\')' };
     hqlObjects['gt'] = { hql: ' gt ', label: ' maior que ', before: ' >   ', after: '' };
     hqlObjects['le'] = { hql: ' le ', label: ' menor igual ', before: ' <=  ', after: '' };
-    hqlObjects['lt'] = { hql: ' lt ', label: ' menor que ', before: ' < \'', after: '\'' };
+    hqlObjects['lt'] = { hql: ' lt ', label: ' menor que ', before: ' < upper(\'', after: '\')' };
     hqlObjects['in'] = { hql: ' in ', label: ' em', before: ' in (', after: ')' };
     hqlObjects['is'] = { hql: ' is ', label: ' est\xE1 ', before: ' is ', after: '' };
     hqlObjects['date_eq'] = { hql: ' eq ', label: ' igual ', before: ' >= ', after: '' };
@@ -420,6 +420,7 @@ function HQLFactory($filter) {
           after = mapObj[val].query.condition ? mapObj[val].query.condition.after : '*';
 
       if (mapObj[val].query.attribute) {
+        console.log(mapObj[val].query.attribute.type);
         switch (mapObj[val].query.attribute.type) {
           case 'date':
             var date = value.split('');
@@ -457,6 +458,11 @@ function HQLFactory($filter) {
           case 'money':
             before = before.replace(/'/g, '');
             after = after.replace(/'/g, '');
+            break;
+          case 'string':
+          case 'cpf':
+          case 'cnpj':
+            attribute = 'upper(' + attribute + ')';
             break;
         }
       }
