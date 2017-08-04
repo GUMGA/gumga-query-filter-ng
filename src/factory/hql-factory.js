@@ -237,7 +237,6 @@ function HQLFactory($filter){
               after     = mapObj[val].query.condition ? mapObj[val].query.condition.after : '*';
 
             if (mapObj[val].query.attribute) {
-              console.log(mapObj[val].query.attribute.type)
               switch (mapObj[val].query.attribute.type) {
                 case 'date':
                   let date = value.split('')
