@@ -1,8 +1,8 @@
 
 'use strict'
 
-Filter.$inject = ['HQLFactory', '$compile', '$timeout', '$interpolate', 'QueryModelFactory']
-function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory) {
+Filter.$inject = ['HQLFactory', '$compile', '$timeout', '$interpolate', 'QueryModelFactory', '$filter']
+function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory, $filter) {
   let template = `
         <style>
           .gumga-filter .dropdown-menu > li > a {
@@ -142,7 +142,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory)
                     </div>
                     <div class="btn-group" id="_btnValue{{$key}}" ng-show="!$value.query.label">
                       <button type="button" class="btn btn-default" ng-click="toggleUpdatingValue(this, $key)" ng-disabled="validatonValue($value)" id="_valueLabel{{$key}}">
-                          <span id="_conditionLabel{{$key}}">{{ $value.query.value ? $value.query.value.push && $value.query.value.length > 0  ?  $value.query.value.join(', ') : $value.query.value : 'valor' | gumgaGenericFilter:$value.query.attribute.type}} </span>
+                          <span id="_conditionLabel{{$key}}">{{ getTextQuery($value) }} </span>
                       </button>
                       <div class="gumga-filter-panel" id="_panelValue{{$key}}"></div>
                     </div>
@@ -209,6 +209,20 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory)
         $scope.filterSelectItem = data;
         $timeout(() => $scope.search({ param: HQLFactory.createHql($scope.controlMap) }));
       })
+
+      $scope.getTextQuery = ($value) => {
+         var toReturn = 'valor';
+         if($value.query.attribute){
+           if($value.query.attribute.type && $value.query.attribute.type == 'select' && $value.query.value != undefined && $value.query.value != null){
+             let data = $value.query.attribute.extraProperties.data.filter(data => data.field == $value.query.value);
+             if(data.length > 0){
+               return data[0].label;
+             }
+           }
+           toReturn = $filter('gumgaGenericFilter')(($value.query.value ? $value.query.value.push && $value.query.value.length > 0  ? $value.query.value.join(', ') : $value.query.value : 'valor'), $value.query.attribute.type);
+         }
+         return toReturn;
+      }
 
       $scope.$on('openOrCloseFilter', (event, openOrClose) => {
         if (!openOrClose) {

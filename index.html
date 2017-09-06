@@ -29,6 +29,7 @@
               <advanced-search-field type="money" label="Money" field="qtdFaltas"></advanced-search-field>
               <advanced-search-field type="cpf" label="CPF" field="telefonePrincipal"></advanced-search-field>
               <advanced-search-field type="cnpj" label="CNPJ" field="telefonePrincipal"></advanced-search-field>
+              <advanced-search-field type="select" label="Sexo" field="sexo" data="sexos"></advanced-search-field>
               </gumga-query>
         </form>
       </div>
@@ -60,6 +61,22 @@
         $scope.advanced = function (value) {
           console.info('GumgaQuery', 'Value: ', value)
         }
+
+        $scope.sexos = [
+             {
+                 "field": "MASCULINO",
+                 "label": "Masculino"
+             },
+             {
+                 "field": "FEMININO",
+                 "label": "Feminino"
+             },
+             {
+                 "field": "NAO_INFORMADO",
+                 "label": "Não informado"
+             }
+         ]
+
       }])
   </script>
 </body>
