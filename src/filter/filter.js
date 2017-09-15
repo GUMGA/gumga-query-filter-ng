@@ -20,7 +20,6 @@
         containerId: '@?'
       },
       link: ($scope, $element, $attrs, $ctrl, $transclude) => {
-        console.log('TESTE')
         $scope.possibleAdvancedFields = []
 
         $scope.search       = $scope.search      || angular.noop

@@ -170,7 +170,8 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
     transclude: true,
     scope: {
       search: '&',
-      saveQuery: '&'
+      saveQuery: '&',
+      useGquery: '=?'
     },
     link: ($scope, $element, $attrs, $ctrl, $transclude) => {
       const outerScope = $scope.$parent.$parent
@@ -207,7 +208,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
           }
         })
         $scope.filterSelectItem = data;
-        $timeout(() => $scope.search({ param: HQLFactory.createHql($scope.controlMap) }));
+        $timeout(() => $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) }));
       })
 
       $scope.getTextQuery = ($value) => {
@@ -345,7 +346,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
             scope.$value.removeState('ATTRIBUTE_AND_CONDITION').addState('UPDATING_VALUE')
             compileContent(key, scope)
           } else {
-            $scope.search({ param: HQLFactory.createHql($scope.controlMap) });
+            $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
           }
         })
       }
@@ -465,7 +466,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
       function saveSearch(name, event) {
         if (!event || event.keyCode == 13) {
-          $scope.$parent.proxySave(HQLFactory.createHql($scope.controlMap), $scope.nameSearch)
+          $scope.$parent.proxySave(HQLFactory.createHql($scope.controlMap, $scope.useGquery), $scope.nameSearch)
           $scope.saveFilterOpen = !$scope.saveFilterOpen;
           $scope.nameSearch = '';
         }
@@ -500,12 +501,12 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
         if (scope.$value.query.value === 'AND') {
           scope.$value.query.value = 'OR'
           scope.$value.query.label = 'OU'
-          $scope.search({ param: HQLFactory.createHql($scope.controlMap) });
+          $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
           return
         }
         scope.$value.query.value = 'AND'
         scope.$value.query.label = 'E'
-        $scope.search({ param: HQLFactory.createHql($scope.controlMap) });
+        $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
       }
 
       document.addEventListener('click', (e) => {
@@ -567,10 +568,10 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
           let scopeBeingUpdated = getElm(`_panelValue${updatingValue}`).scope()
           $timeout(() => scopeBeingUpdated.$value.removeState('UPDATING_VALUE').removeState('ATTRIBUTE_AND_CONDITION').addState('EVERYTHING_NEEDED'))
           getElm(`_panelValue${updatingValue}`).removeClass('show')
-          $scope.search({ param: HQLFactory.createHql($scope.controlMap) });
+          $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
         }
         if (typeSearch == "remove") {
-          let param = positionCondition == 0 ? {} : HQLFactory.createHql($scope.controlMap);
+          let param = positionCondition == 0 ? {} : HQLFactory.createHql($scope.controlMap, $scope.useGquery);
           $scope.search({ param: param });
         }
       }

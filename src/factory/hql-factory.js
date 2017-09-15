@@ -54,7 +54,7 @@ function HQLFactory($filter){
     defaultCondition: hqlObjectCreator(['eq']),
     conditions: hqlObjectCreator(['eq', 'ne', 'gt', 'ge', 'lt', 'le']),
     template: `<div class="input-group">
-                    <input type="text" ng-keyup="goSearch($event)" ng-model="$value.query.value" class="form-control" gumga-number required style=" width: 150px;height: 40px;"/>                    
+                    <input type="text" ng-keyup="goSearch($event)" ng-model="$value.query.value" class="form-control" gumga-number required style=" width: 150px;height: 40px;"/>
                     <div class="input-group-addon">
                         <i ng-show="validator($value.query.value)" class="glyphicon glyphicon-ok" style="color:green"></i></span>
                         <i ng-show="!validator($value.query.value)" class="glyphicon glyphicon-remove" style="color:red"></i>
@@ -203,28 +203,59 @@ function HQLFactory($filter){
   }
 
   function hqlObjectCreator(hqls = [], hqlObjects = {}){
-    hqlObjects['contains']      = { hql: ` contains `     , label:  ` contém `        , before: ` like upper('%`     , after:  `%')` }
-    hqlObjects['not_contains']  = { hql: ` not_contains ` , label:  ` não contém `    , before: ` not like upper('%` , after:  `%')` }
-    hqlObjects['starts_with']   = { hql: ` starts_with `  , label:  ` começa com `    , before: ` like upper('`      , after:  `%')` }
-    hqlObjects['ends_with']     = { hql: ` ends_with `    , label:  ` termina com `   , before: ` like upper('%`     , after:  `')` }
-    hqlObjects['eq']            = { hql: ` eq `           , label:  ` igual `         , before: ` = upper('`         , after:  `')` }
-    hqlObjects['ne']            = { hql: ` ne `           , label:  ` diferente de `  , before: ` != upper('`        , after:  `')` }
-    hqlObjects['ge']            = { hql: ` ge `           , label:  ` maior igual `   , before: ` >= upper('`        , after:  `')` }
-    hqlObjects['gt']            = { hql: ` gt `           , label:  ` maior que `     , before: ` >   `        , after:  `` }
-    hqlObjects['le']            = { hql: ` le `           , label:  ` menor igual `   , before: ` <=  `        , after:  `` }
-    hqlObjects['lt']            = { hql: ` lt `           , label:  ` menor que `     , before: ` < upper('`         , after:  `')` }
-    hqlObjects['in']            = { hql: ` in `           , label:  ` em`             , before: ` in (`        , after:  `)` }
-    hqlObjects['is']            = { hql: ` is `           , label:  ` está `          , before: ` is `         , after:  `` }
-    hqlObjects['date_eq']       = { hql: ` eq `           , label:  ` igual `         , before: ` >= `         , after:  `` }
-    hqlObjects['date_ne']       = { hql: ` ne `           , label:  ` diferente de `  , before: ` <= `         , after:  `` }
-    hqlObjects['date_lt']       = { hql: ` ld `           , label:  ` anterior a `    , before: ` <= `         , after:  `` }
-    hqlObjects['date_gt']       = { hql: ` gd `           , label:  ` posterior a `   , before: ` >= `         , after:  `` }
+    hqlObjects['contains']      = { key: 'CONTAINS', hql: ` contains `     , label:  ` contém `        , before: ` like upper('%`     , after:  `%')` }
+    hqlObjects['not_contains']  = { key: 'NOT_CONTAINS', hql: ` not_contains ` , label:  ` não contém `    , before: ` not like upper('%` , after:  `%')` }
+    hqlObjects['starts_with']   = { keys:'STARTS_WITH', hql: ` starts_with `  , label:  ` começa com `    , before: ` like upper('`      , after:  `%')` }
+    hqlObjects['ends_with']     = { key: 'ENDS_WITH', hql: ` ends_with `    , label:  ` termina com `   , before: ` like upper('%`     , after:  `')` }
+    hqlObjects['eq']            = { key: 'EQUAL', hql: ` eq `           , label:  ` igual `         , before: ` = upper('`         , after:  `')` }
+    hqlObjects['ne']            = { key: 'NOT_EQUAL', hql: ` ne `           , label:  ` diferente de `  , before: ` != upper('`        , after:  `')` }
+    hqlObjects['ge']            = { key: 'GREATER_EQUAL', hql: ` ge `           , label:  ` maior igual `   , before: ` >= upper('`        , after:  `')` }
+    hqlObjects['gt']            = { key: 'GREATER', hql: ` gt `           , label:  ` maior que `     , before: ` >   `        , after:  `` }
+    hqlObjects['le']            = { key: 'LOWER_EQUAL', hql: ` le `           , label:  ` menor igual `   , before: ` <=  `        , after:  `` }
+    hqlObjects['lt']            = { key: 'LOWER', hql: ` lt `           , label:  ` menor que `     , before: ` < upper('`         , after:  `')` }
+    hqlObjects['in']            = { key: 'IN_ELEMENTS', hql: ` in `           , label:  ` em`             , before: ` in (`        , after:  `)` }
+    hqlObjects['is']            = { key: 'IS', hql: ` is `           , label:  ` está `          , before: ` is `         , after:  `` }
+    hqlObjects['date_eq']       = { key: 'EQUAL', hql: ` eq `           , label:  ` igual `         , before: ` >= `         , after:  `` }
+    hqlObjects['date_ne']       = { key: 'NOT_EQUAL', hql: ` ne `           , label:  ` diferente de `  , before: ` <= `         , after:  `` }
+    hqlObjects['date_lt']       = { key: 'LOWER_EQUAL', hql: ` ld `           , label:  ` anterior a `    , before: ` <= `         , after:  `` }
+    hqlObjects['date_gt']       = { key: 'GREATER_EQUAL', hql: ` gd `           , label:  ` posterior a `   , before: ` >= `         , after:  `` }
 
     // hqlObjects['date_eq']       = { hql: ` date_eq`       , label:  ` no dia `        , before: ` `}
     return hqls.map(value => hqlObjects[value])
   }
 
-  function createHql(mapObj = {}){
+  function generateGQuery(mapObj){
+    let query = null;
+    let querys = Object.keys(mapObj).map(key => mapObj[key]);
+    let i=0;
+
+    if(querys[i].query.attribute.type == 'date'){
+      let value = new Date(Date.parse(querys[i].query.value.replace( /(\d{2})(\d{2})(\d{4})/, "$2/$1/$3")));
+      query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, value));
+    }else{
+      query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, querys[i].query.value));
+    }
+
+    for( i = 2; i < querys.length; i += 2){
+      let previousValue = querys[i-1];
+      let value = querys[i].query.value;
+      if(querys[i].query.attribute.type == 'date'){
+        value = new Date(Date.parse(value.replace( /(\d{2})(\d{2})(\d{4})/, "$2/$1/$3")));
+      }
+      if(previousValue.query.value.toLowerCase() === 'and'){
+        query = query.and(new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, value));
+      }else{
+        query = query.or(new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, value));
+      }
+    }
+
+    return query;
+  }
+
+  function createHql(mapObj = {}, useGQuery = false){
+    if(useGQuery){
+      return generateGQuery(mapObj);
+    }
     let aqo = []
     let aq =
       Object
@@ -275,7 +306,7 @@ function HQLFactory($filter){
                 case 'money':
                   before    = before.replace(/'/g, '');
                   after     = after.replace(/'/g, '');
-                  break;  
+                  break;
                 case 'string':
                 case 'cpf':
                 case 'cnpj':
@@ -299,24 +330,24 @@ function HQLFactory($filter){
         if (operators.indexOf(item) === -1)
           return true;
 
-        var previousValue = ary[idx - 1];        
-        var nextValue = ary[idx + 1];        
+        var previousValue = ary[idx - 1];
+        var nextValue = ary[idx + 1];
         if ((previousValue !== undefined && operators.indexOf(previousValue) === -1)
           && (nextValue !== undefined && operators.indexOf(nextValue) === -1))
           return true;
 
         return false;
-      })      
+      })
       .join(' ')
 
     if(aq.slice(-2) === 'ND' || aq.slice(-2) === 'OR'){
       aqo.pop()
       return { hql: aq.slice(0, -3), source: JSON.stringify(aqo)  }
     }
-    
+
     if (aq) {
       return { hql: aq, source: JSON.stringify(aqo) }
-    }    
+    }
 
     return {}
   }

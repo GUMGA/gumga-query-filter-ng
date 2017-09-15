@@ -62,12 +62,13 @@
 
           let element   = angular.element(value),
               field     = element.attr('field') ? element.attr('field') : '',
+              type     = element.attr('type') ? element.attr('type') : 'string',
               checkbox  = !!$scope.$eval(element.attr('select')),
               label     = element.attr('label') ? $interpolate(element.attr('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1));
 
           if(!field)      console.error(FIELD_ERR)
           if(checkbox)    alreadySelected = true
-          ctrl.mapFields[field] = { checkbox, label, field }
+          ctrl.mapFields[field] = { checkbox, label, field, type }
         })
 
         if(!alreadySelected){
@@ -94,7 +95,7 @@
       }
 
       function compileFilter(){
-        let template  = `<gumga-filter-core ng-show="openFilter" is-open="true" search="ctrl.proxySearch(param)" ${$attrs.saveQuery ? 'save-query="saveQuery(query, name)"' : ''}is-query="true">${ctrl.possibleAdvancedFields.reduce(((prev, next) => prev += next), '')}</gumga-filter-core>`,
+        let template  = `<gumga-filter-core ng-show="openFilter" use-gquery="${$attrs.useGquery}" is-open="true" search="ctrl.proxySearch(param)" ${$attrs.saveQuery ? 'save-query="saveQuery(query, name)"' : ''}is-query="true">${ctrl.possibleAdvancedFields.reduce(((prev, next) => prev += next), '')}</gumga-filter-core>`,
 
         element   = angular.element(document.getElementById(ctrl.containerAdvanced));
         element.replaceWith($compile(template)($scope))
@@ -102,14 +103,40 @@
 
       function doSearch(param, event = { keyCode: 13 }, inputType){
           if(event.keyCode !== 13 || inputType == 'TYPEAHEAD') return;
-          let field = Object
+          let result = Object
                       .keys(ctrl.mapFields)
                       .filter(value => !!ctrl.mapFields[value].checkbox)
                       .reduce((prev, next) => (prev += next.concat(',')), '')
-                      .slice(0, -1)
+                      .slice(0, -1);
 
-          if(field.length === 0) return;
-          ctrl.search({ field, param })
+          if(result.length === 0) return;
+          if(ctrl.useGquery){
+            let query = new GQuery();
+            result = result.split(',');
+            result.forEach((field, index) => {
+              let criteria = new Criteria(field, getComparisonOperatorByType(field), param);
+              if(ctrl.mapFields[field].type == 'string'){
+                criteria.setFieldFunction('lower(%s)');
+                criteria.setValueFunction('lower(%s)');
+              }
+              if(index == 0){
+                query = new GQuery(criteria);
+              }else{
+                query = query.or(criteria);
+              }
+            });
+
+            ctrl.search({ param: query})
+          }else{
+            ctrl.search({ result, param })
+          }
+      }
+
+      function getComparisonOperatorByType(field){
+        if(ctrl.mapFields[field].type == 'string'){
+          return ComparisonOperator.CONTAINS;
+        }
+        return ComparisonOperator.EQUAL;
       }
 
       $scope.$watch('openFilter', (open) => {
@@ -140,7 +167,8 @@
         advancedSearch: '&?',
         containerAdvanced: '@?',
         savedFilters: '&?',
-        saveQuery:'&?'
+        saveQuery:'&?',
+        useGquery:'=?'
       },
       bindToController: true,
       transclude: true,
