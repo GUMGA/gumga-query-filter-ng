@@ -202,7 +202,9 @@ function Search($q, $timeout, $compile, $interpolate) {
             query = query.or(criteria);
           }
         });
-
+        if ($attrs.lastGquery) {
+          ctrl.lastGquery = angular.copy(query);
+        }
         ctrl.search({ param: query });
       } else {
         ctrl.search({ field: result, param: param });
@@ -249,7 +251,8 @@ function Search($q, $timeout, $compile, $interpolate) {
       containerAdvanced: '@?',
       savedFilters: '&?',
       saveQuery: '&?',
-      useGquery: '=?'
+      useGquery: '=?',
+      lastGquery: '=?'
     },
     bindToController: true,
     transclude: true,
@@ -468,9 +471,11 @@ function HQLFactory($filter) {
   function createHql() {
     var mapObj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var useGQuery = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var scopeParent = arguments[2];
 
     if (useGQuery) {
-      return generateGQuery(mapObj);
+      scopeParent.ctrl.lastGquery = generateGQuery(mapObj);
+      return scopeParent.ctrl.lastGquery;
     }
     var aqo = [];
     var aq = Object.keys(mapObj).filter(function (value) {
@@ -718,7 +723,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
         });
         $scope.filterSelectItem = data;
         $timeout(function () {
-          return $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
+          return $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
         });
       });
 
@@ -860,7 +865,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
             scope.$value.removeState('ATTRIBUTE_AND_CONDITION').addState('UPDATING_VALUE');
             compileContent(key, scope);
           } else {
-            $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
+            $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
           }
         });
       }
@@ -977,7 +982,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
       function saveSearch(name, event) {
         if (!event || event.keyCode == 13) {
-          $scope.$parent.proxySave(HQLFactory.createHql($scope.controlMap, $scope.useGquery), $scope.nameSearch);
+          $scope.$parent.proxySave(HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent), $scope.nameSearch);
           $scope.saveFilterOpen = !$scope.saveFilterOpen;
           $scope.nameSearch = '';
         }
@@ -1017,12 +1022,12 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
         if (scope.$value.query.value === 'AND') {
           scope.$value.query.value = 'OR';
           scope.$value.query.label = 'OU';
-          $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
+          $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
           return;
         }
         scope.$value.query.value = 'AND';
         scope.$value.query.label = 'E';
-        $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
+        $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
       }
 
       document.addEventListener('click', function (e) {
@@ -1098,10 +1103,10 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
             return scopeBeingUpdated.$value.removeState('UPDATING_VALUE').removeState('ATTRIBUTE_AND_CONDITION').addState('EVERYTHING_NEEDED');
           });
           getElm('_panelValue' + updatingValue).removeClass('show');
-          $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
+          $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
         }
         if (typeSearch == "remove") {
-          var param = positionCondition == 0 ? {} : HQLFactory.createHql($scope.controlMap, $scope.useGquery);
+          var param = positionCondition == 0 ? {} : HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent);
           $scope.search({ param: param });
         }
       }

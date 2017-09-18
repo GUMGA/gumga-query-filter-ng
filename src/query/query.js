@@ -125,7 +125,9 @@
                 query = query.or(criteria);
               }
             });
-
+            if($attrs.lastGquery){
+              ctrl.lastGquery = angular.copy(query);
+            }
             ctrl.search({ param: query });
           }else{
             ctrl.search({ field: result, param: param })
@@ -168,7 +170,8 @@
         containerAdvanced: '@?',
         savedFilters: '&?',
         saveQuery:'&?',
-        useGquery:'=?'
+        useGquery:'=?',
+        lastGquery:'=?'
       },
       bindToController: true,
       transclude: true,

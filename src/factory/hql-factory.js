@@ -252,9 +252,10 @@ function HQLFactory($filter){
     return query;
   }
 
-  function createHql(mapObj = {}, useGQuery = false){
+  function createHql(mapObj = {}, useGQuery = false, scopeParent){
     if(useGQuery){
-      return generateGQuery(mapObj);
+      scopeParent.ctrl.lastGquery = generateGQuery(mapObj);
+      return scopeParent.ctrl.lastGquery;
     }
     let aqo = []
     let aq =
