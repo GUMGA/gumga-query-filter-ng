@@ -422,7 +422,7 @@ function HQLFactory($filter) {
     hqlObjects['gt'] = { key: 'GREATER', hql: ' gt ', label: ' maior que ', before: ' >   ', after: '' };
     hqlObjects['le'] = { key: 'LOWER_EQUAL', hql: ' le ', label: ' menor igual ', before: ' <=  ', after: '' };
     hqlObjects['lt'] = { key: 'LOWER', hql: ' lt ', label: ' menor que ', before: ' < upper(\'', after: '\')' };
-    hqlObjects['in'] = { key: 'IN_ELEMENTS', hql: ' in ', label: ' em', before: ' in (', after: ')' };
+    hqlObjects['in'] = { key: 'IN', hql: ' in ', label: ' em', before: ' in (', after: ')' };
     hqlObjects['is'] = { key: 'IS', hql: ' is ', label: ' est\xE1 ', before: ' is ', after: '' };
     hqlObjects['date_eq'] = { key: 'EQUAL', hql: ' eq ', label: ' igual ', before: ' >= ', after: '' };
     hqlObjects['date_ne'] = { key: 'NOT_EQUAL', hql: ' ne ', label: ' diferente de ', before: ' <= ', after: '' };
