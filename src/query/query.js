@@ -126,9 +126,9 @@
               }
             });
 
-            ctrl.search({ param: query})
+            ctrl.search({ param: query });
           }else{
-            ctrl.search({ result, param })
+            ctrl.search({ field: result, param: param })
           }
       }
 

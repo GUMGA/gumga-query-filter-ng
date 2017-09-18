@@ -205,7 +205,7 @@ function Search($q, $timeout, $compile, $interpolate) {
 
         ctrl.search({ param: query });
       } else {
-        ctrl.search({ result: result, param: param });
+        ctrl.search({ field: result, param: param });
       }
     }
 
