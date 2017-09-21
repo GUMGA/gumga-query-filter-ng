@@ -52,12 +52,12 @@
         $httpProvider.defaults.headers.common['gumgaToken'] = 'eterno'
       })
       .controller('ctrl', ['gumgaController', 'GumgaRest', '$scope', '$http', function (gumgaController, GumgaRest, $scope, $http) {
-        var PessoaService = new GumgaRest('http://192.168.253.246:8088/dashboard-api/api/presentations');
+
+        var PessoaService = new GumgaRest('http://192.168.112.227:8080/dashboard-api/api/presentations');
+
         gumgaController.createRestMethods($scope, PessoaService, 'apresentacoes');
 
         $scope.apresentacoes.methods.searchWithGQuery();
-
-        // $scope.apresentacoes.methods.searchWithGQuery()
 
         $scope.config = {
           columns: 'name, id',

@@ -191,7 +191,7 @@ function Search($q, $timeout, $compile, $interpolate) {
         var query = new GQuery();
         result = result.split(',');
         result.forEach(function (field, index) {
-          var criteria = new Criteria(field, getComparisonOperatorByType(field), param);
+          var criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined ? '' : param);
           if (ctrl.mapFields[field].type == 'string') {
             criteria.setFieldFunction('lower(%s)');
             criteria.setValueFunction('lower(%s)');
@@ -714,22 +714,28 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       $scope.$on('filter-items', function (err, data) {
         var value = JSON.parse(data.value);
         $scope.controlMap = {};
-        JSON.parse(value.source).forEach(function (val, index) {
-          if (index % 2 == 0) {
-            $scope.controlMap[index] = QueryModelFactory.create(val, true, 'EVERYTHING_NEEDED', zIndexInitial--);
-          } else {
-            $scope.controlMap[index] = QueryModelFactory.create({ value: val.value, label: val.value === 'AND' ? 'E' : 'OU' }, undefined, 'EVERYTHING_NEEDED', zIndexInitial--);
-          }
-        });
-        $scope.filterSelectItem = data;
-        $timeout(function () {
-          return $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
-        });
+        if ($scope.useGquery) {
+          $timeout(function () {
+            return $scope.search({ param: value });
+          });
+        } else {
+          JSON.parse(value.source).forEach(function (val, index) {
+            if (index % 2 == 0) {
+              $scope.controlMap[index] = QueryModelFactory.create(val, true, 'EVERYTHING_NEEDED', zIndexInitial--);
+            } else {
+              $scope.controlMap[index] = QueryModelFactory.create({ value: val.value, label: val.value === 'AND' ? 'E' : 'OU' }, undefined, 'EVERYTHING_NEEDED', zIndexInitial--);
+            }
+          });
+          $scope.filterSelectItem = data;
+          $timeout(function () {
+            return $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
+          });
+        }
       });
 
       $scope.getTextQuery = function ($value) {
         var toReturn = 'valor';
-        if ($value.query.attribute) {
+        if ($value && $value.query && $value.query.attribute) {
           if ($value.query.attribute.type && $value.query.attribute.type == 'select' && $value.query.value != undefined && $value.query.value != null) {
             var data = $value.query.attribute.extraProperties.data.filter(function (data) {
               return data.field == $value.query.value;

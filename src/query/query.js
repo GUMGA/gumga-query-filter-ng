@@ -114,7 +114,7 @@
             let query = new GQuery();
             result = result.split(',');
             result.forEach((field, index) => {
-              let criteria = new Criteria(field, getComparisonOperatorByType(field), param);
+              let criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined ? '' : param);
               if(ctrl.mapFields[field].type == 'string'){
                 criteria.setFieldFunction('lower(%s)');
                 criteria.setValueFunction('lower(%s)');

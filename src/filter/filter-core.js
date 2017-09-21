@@ -200,20 +200,24 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       $scope.$on('filter-items', (err, data) => {
         let value = JSON.parse(data.value)
         $scope.controlMap = {}
-        JSON.parse(value.source).forEach((val, index) => {
-          if (index % 2 == 0) {
-            $scope.controlMap[index] = QueryModelFactory.create(val, true, 'EVERYTHING_NEEDED', zIndexInitial--)
-          } else {
-            $scope.controlMap[index] = QueryModelFactory.create({ value: val.value, label: val.value === 'AND' ? 'E' : 'OU' }, undefined, 'EVERYTHING_NEEDED', zIndexInitial--)
-          }
-        })
-        $scope.filterSelectItem = data;
-        $timeout(() => $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) }));
+        if($scope.useGquery){
+          $timeout(() => $scope.search({ param: value }));
+        }else{
+          JSON.parse(value.source).forEach((val, index) => {
+            if (index % 2 == 0) {
+              $scope.controlMap[index] = QueryModelFactory.create(val, true, 'EVERYTHING_NEEDED', zIndexInitial--)
+            } else {
+              $scope.controlMap[index] = QueryModelFactory.create({ value: val.value, label: val.value === 'AND' ? 'E' : 'OU' }, undefined, 'EVERYTHING_NEEDED', zIndexInitial--)
+            }
+          })
+          $scope.filterSelectItem = data;
+          $timeout(() => $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) }));
+        }
       })
 
       $scope.getTextQuery = ($value) => {
          var toReturn = 'valor';
-         if($value.query.attribute){
+         if($value && $value.query && $value.query.attribute){
            if($value.query.attribute.type && $value.query.attribute.type == 'select' && $value.query.value != undefined && $value.query.value != null){
              let data = $value.query.attribute.extraProperties.data.filter(data => data.field == $value.query.value);
              if(data.length > 0){
