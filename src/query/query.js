@@ -64,11 +64,13 @@
               field     = element.attr('field') ? element.attr('field') : '',
               type     = element.attr('type') ? element.attr('type') : 'string',
               checkbox  = !!$scope.$eval(element.attr('select')),
-              label     = element.attr('label') ? $interpolate(element.attr('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1));
+              label     = element.attr('label') ? $interpolate(element.attr('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1)),
+              innerJoin = element.attr('inner-join') ? element.attr('inner-join').split(',') : [],
+              leftJoin = element.attr('left-join') ? element.attr('left-join').split(',') : [];
 
           if(!field)      console.error(FIELD_ERR)
           if(checkbox)    alreadySelected = true
-          ctrl.mapFields[field] = { checkbox, label, field, type }
+          ctrl.mapFields[field] = { checkbox, label, field, type, innerJoin, leftJoin }
         })
 
         if(!alreadySelected){
@@ -113,6 +115,31 @@
           if(ctrl.useGquery){
             let query = new GQuery();
             result = result.split(',');
+
+            let innerJoins = [];
+            let leftJoins = [];
+
+            Object.keys(ctrl.mapFields).map(key => {
+              return ctrl.mapFields[key];
+            }).forEach(field => {
+              if (field.innerJoin) {
+                field.innerJoin.forEach(innerJoin => {
+                  if(innerJoins.indexOf(innerJoin) == -1){
+                    innerJoins.push(innerJoin);
+                  }
+                })
+              }
+
+              if (field.leftJoin) {
+                field.leftJoin.forEach(leftJoin => {
+                  if(leftJoins.indexOf(leftJoin) == -1){
+                    leftJoins.push(leftJoin);
+                  }
+                })
+              }
+
+            })
+
             result.forEach((field, index) => {
               let criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined ? '' : param);
               if(ctrl.mapFields[field].type == 'string'){
@@ -125,6 +152,15 @@
                 query = query.or(criteria);
               }
             });
+
+            innerJoins.forEach(function(innerJoin) {
+              query.join(new Join(innerJoin, JoinType.INNER))
+            })
+
+            leftJoins.forEach(function(leftJoin) {
+              query.join(new Join(leftJoin, JoinType.LEFT))
+            })
+
             if($attrs.lastGquery){
               ctrl.lastGquery = angular.copy(query);
             }

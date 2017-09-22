@@ -224,6 +224,34 @@ function HQLFactory($filter){
     return hqls.map(value => hqlObjects[value])
   }
 
+  function setJoins(mapObj, gQuery){
+    let innerJoins = [];
+    let leftJoins = [];
+    Object.keys(mapObj).map(key => {
+      return mapObj[key];
+    }).forEach(field => {
+      if (field.query && field.query.attribute) {
+        field.query.attribute.innerJoin.forEach(innerJoin => {
+          if(innerJoins.indexOf(innerJoin) == -1){
+            innerJoins.push(innerJoin);
+          }
+        })
+        field.query.attribute.leftJoin.forEach(leftJoin => {
+          if(leftJoins.indexOf(leftJoin) == -1){
+            leftJoins.push(leftJoin);
+          }
+        })
+      }
+    })
+    innerJoins.forEach(function(innerJoin) {
+      gQuery = gQuery.join(new Join(innerJoin, JoinType.INNER))
+    })
+
+    leftJoins.forEach(function(leftJoin) {
+      gQuery = gQuery.join(new Join(leftJoin, JoinType.LEFT))
+    })
+  }
+
   function generateGQuery(mapObj){
     let query = null;
     let querys = Object.keys(mapObj).map(key => mapObj[key]);
@@ -255,8 +283,11 @@ function HQLFactory($filter){
   function createHql(mapObj = {}, useGQuery = false, scopeParent){
     if(useGQuery){
       scopeParent.ctrl.lastGquery = generateGQuery(mapObj);
+      setJoins(mapObj, scopeParent.ctrl.lastGquery);
+      console.log(scopeParent.ctrl.lastGquery);
       return scopeParent.ctrl.lastGquery;
     }
+
     let aqo = []
     let aq =
       Object

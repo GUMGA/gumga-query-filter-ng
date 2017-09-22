@@ -134,11 +134,13 @@ function Search($q, $timeout, $compile, $interpolate) {
             field = element.attr('field') ? element.attr('field') : '',
             type = element.attr('type') ? element.attr('type') : 'string',
             checkbox = !!$scope.$eval(element.attr('select')),
-            label = element.attr('label') ? $interpolate(element.attr('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1));
+            label = element.attr('label') ? $interpolate(element.attr('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1)),
+            innerJoin = element.attr('inner-join') ? element.attr('inner-join').split(',') : [],
+            leftJoin = element.attr('left-join') ? element.attr('left-join').split(',') : [];
 
         if (!field) console.error(FIELD_ERR);
         if (checkbox) alreadySelected = true;
-        ctrl.mapFields[field] = { checkbox: checkbox, label: label, field: field, type: type };
+        ctrl.mapFields[field] = { checkbox: checkbox, label: label, field: field, type: type, innerJoin: innerJoin, leftJoin: leftJoin };
       });
 
       if (!alreadySelected) {
@@ -190,6 +192,30 @@ function Search($q, $timeout, $compile, $interpolate) {
       if (ctrl.useGquery) {
         var query = new GQuery();
         result = result.split(',');
+
+        var innerJoins = [];
+        var leftJoins = [];
+
+        Object.keys(ctrl.mapFields).map(function (key) {
+          return ctrl.mapFields[key];
+        }).forEach(function (field) {
+          if (field.innerJoin) {
+            field.innerJoin.forEach(function (innerJoin) {
+              if (innerJoins.indexOf(innerJoin) == -1) {
+                innerJoins.push(innerJoin);
+              }
+            });
+          }
+
+          if (field.leftJoin) {
+            field.leftJoin.forEach(function (leftJoin) {
+              if (leftJoins.indexOf(leftJoin) == -1) {
+                leftJoins.push(leftJoin);
+              }
+            });
+          }
+        });
+
         result.forEach(function (field, index) {
           var criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined ? '' : param);
           if (ctrl.mapFields[field].type == 'string') {
@@ -202,6 +228,15 @@ function Search($q, $timeout, $compile, $interpolate) {
             query = query.or(criteria);
           }
         });
+
+        innerJoins.forEach(function (innerJoin) {
+          query.join(new Join(innerJoin, JoinType.INNER));
+        });
+
+        leftJoins.forEach(function (leftJoin) {
+          query.join(new Join(leftJoin, JoinType.LEFT));
+        });
+
         if ($attrs.lastGquery) {
           ctrl.lastGquery = angular.copy(query);
         }
@@ -438,6 +473,34 @@ function HQLFactory($filter) {
     });
   }
 
+  function setJoins(mapObj, gQuery) {
+    var innerJoins = [];
+    var leftJoins = [];
+    Object.keys(mapObj).map(function (key) {
+      return mapObj[key];
+    }).forEach(function (field) {
+      if (field.query && field.query.attribute) {
+        field.query.attribute.innerJoin.forEach(function (innerJoin) {
+          if (innerJoins.indexOf(innerJoin) == -1) {
+            innerJoins.push(innerJoin);
+          }
+        });
+        field.query.attribute.leftJoin.forEach(function (leftJoin) {
+          if (leftJoins.indexOf(leftJoin) == -1) {
+            leftJoins.push(leftJoin);
+          }
+        });
+      }
+    });
+    innerJoins.forEach(function (innerJoin) {
+      gQuery = gQuery.join(new Join(innerJoin, JoinType.INNER));
+    });
+
+    leftJoins.forEach(function (leftJoin) {
+      gQuery = gQuery.join(new Join(leftJoin, JoinType.LEFT));
+    });
+  }
+
   function generateGQuery(mapObj) {
     var query = null;
     var querys = Object.keys(mapObj).map(function (key) {
@@ -475,8 +538,11 @@ function HQLFactory($filter) {
 
     if (useGQuery) {
       scopeParent.ctrl.lastGquery = generateGQuery(mapObj);
+      setJoins(mapObj, scopeParent.ctrl.lastGquery);
+      console.log(scopeParent.ctrl.lastGquery);
       return scopeParent.ctrl.lastGquery;
     }
+
     var aqo = [];
     var aq = Object.keys(mapObj).filter(function (value) {
       return mapObj[value].active && mapObj[value].query.value;
@@ -777,6 +843,8 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
           var field = value.getAttribute('field'),
               type = value.getAttribute('type'),
+              innerJoin = value.getAttribute('inner-join') ? value.getAttribute('inner-join').split(',') : [],
+              leftJoin = value.getAttribute('left-join') ? value.getAttribute('left-join').split(',') : [],
               label = value.getAttribute('label') ? $interpolate(value.getAttribute('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1)),
               extraProperties = {};
 
@@ -788,7 +856,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
           if (!HQLFactory.useType(type)) return console.error(TYPE_ERR.replace('{1}', type));
 
-          $scope._attributes.push({ field: field, type: type, label: label, extraProperties: extraProperties });
+          $scope._attributes.push({ field: field, type: type, label: label, extraProperties: extraProperties, innerJoin: innerJoin, leftJoin: leftJoin });
         });
       });
 

@@ -257,6 +257,8 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
           let field = value.getAttribute('field'),
             type = value.getAttribute('type'),
+            innerJoin = value.getAttribute('inner-join') ? value.getAttribute('inner-join').split(',') : [],
+            leftJoin = value.getAttribute('left-join') ? value.getAttribute('left-join').split(',') : [],
             label = value.getAttribute('label') ? $interpolate(value.getAttribute('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1)),
             extraProperties = {}
 
@@ -268,7 +270,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
           if (!HQLFactory.useType(type)) return console.error(TYPE_ERR.replace('{1}', type))
 
-          $scope._attributes.push({ field, type, label, extraProperties })
+          $scope._attributes.push({ field, type, label, extraProperties, innerJoin, leftJoin })
         })
       })
 
