@@ -336,7 +336,6 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       }
 
       function deleteFilter(filterId) {
-        console.log(filterId);
         //TODO fazer o deletar filtro
       }
 

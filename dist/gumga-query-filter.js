@@ -501,16 +501,26 @@ function HQLFactory($filter) {
     });
   }
 
+  var createCriteriaLower = function createCriteriaLower(query) {
+    var criteria = new Criteria(query.attribute.field, query.condition.key, query.value);
+    if (query.attribute.type == 'string') {
+      criteria.setFieldFunction('lower(%s)');
+      criteria.setValueFunction('lower(%s)');
+    }
+    return criteria;
+  };
+
   function generateGQuery(mapObj) {
     var query = null;
     var querys = Object.keys(mapObj).map(function (key) {
       return mapObj[key];
     });
     var i = 0;
-
     if (querys[i].query.attribute.type == 'date') {
       var value = new Date(Date.parse(querys[i].query.value.replace(/(\d{2})(\d{2})(\d{4})/, "$2/$1/$3")));
       query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, value));
+    } else if (querys[i].query.attribute.type == 'string') {
+      query = new GQuery(null, createCriteriaLower(querys[i].query));
     } else {
       query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, querys[i].query.value));
     }
@@ -521,11 +531,7 @@ function HQLFactory($filter) {
       if (querys[i].query.attribute.type == 'date') {
         _value = new Date(Date.parse(_value.replace(/(\d{2})(\d{2})(\d{4})/, "$2/$1/$3")));
       }
-      if (previousValue.query.value.toLowerCase() === 'and') {
-        query = query.and(new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, _value));
-      } else {
-        query = query.or(new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, _value));
-      }
+      query = query[previousValue.query.value.toLowerCase()](createCriteriaLower(querys[i].query));
     }
 
     return query;
@@ -539,7 +545,6 @@ function HQLFactory($filter) {
     if (useGQuery) {
       scopeParent.ctrl.lastGquery = generateGQuery(mapObj);
       setJoins(mapObj, scopeParent.ctrl.lastGquery);
-      console.log(scopeParent.ctrl.lastGquery);
       return scopeParent.ctrl.lastGquery;
     }
 
@@ -923,7 +928,6 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       }
 
       function deleteFilter(filterId) {
-        console.log(filterId);
         //TODO fazer o deletar filtro
       }
 
