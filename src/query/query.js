@@ -7,16 +7,16 @@
     let template = `
      <div class="input-group">
         <input type="text" placeholder="Busque seus filtros salvos" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event, 'TYPEAHEAD')" uib-typeahead="item.description for item in ctrl.proxyFn($viewValue)" typeahead-on-select="ctrl.filterSelect($item, $model, $label, $event)" ng-show="ctrl.hasQuerySaved && openFilter"/>
-        <input type="text" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />
+        <input type="text" ng-disabled="ctrl.getActivesFields().length == 0" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />
         <span class="input-group-btn" uib-dropdown uib-keyboard-nav auto-close="outsideClick">
           <button class="btn btn-default" type="button" uib-dropdown-toggle>
             <span class="glyphicon glyphicon-chevron-down"><span>
           </button>
           <ul uib-dropdown-menu role="menu" aria-labelledby="single-button" class="dropdown-menu-search">
-            <li role="menuitem" ng-repeat="(key, $value) in ctrl.mapFields">
+            <li role="menuitem" ng-repeat="(key, $value) in ctrl.mapFields" style="{{ctrl.isDisabled($value.field) ? 'opacity: 0.3;' : ''}}">
               <a class="no-padding-search-fields">
                 <label ng-click="ctrl.checkFields($event, $value.field)">
-                  <input type="checkbox" ng-model="$value.checkbox" />
+                  <input type="checkbox" ng-model="$value.checkbox" style="pointer-events: none;"/>
                   {{::$value.label}}
                 </label>
               </a>
@@ -181,11 +181,32 @@
         if(typeof open !== 'undefined') $scope.$broadcast('openOrCloseFilter', open);
       })
 
-      ctrl.checkFields = (event, field) => {
-        let someChecked = Object.keys(ctrl.mapFields).filter(value => !!ctrl.mapFields[value].checkbox);
-        if ((someChecked.length == 1 && someChecked[0] == field) || Object.keys(ctrl.mapFields).length == 1) {
-          event.preventDefault();
+      ctrl.getActivesFields = () => {
+        return Object.keys(ctrl.mapFields).filter(value => !!ctrl.mapFields[value].checkbox);
+      }
+
+      ctrl.isDisabled = (field) => {
+        let someChecked = ctrl.getActivesFields();
+        if(ctrl.mapFields[field] && ctrl.mapFields[field].type){
+          let differentKinds = someChecked.filter(some => ctrl.mapFields[some].type != ctrl.mapFields[field].type);
+          return differentKinds.length > 0;
         }
+      }
+
+      ctrl.checkFields = (event, field) => {
+        let someChecked = ctrl.getActivesFields();
+        // if ((someChecked.length == 1 && someChecked[0] == field) || Object.keys(ctrl.mapFields).length == 1) {
+        //   event.preventDefault();
+        // }
+        if(ctrl.mapFields[field] && ctrl.mapFields[field].type){
+          let differentKinds = someChecked.filter(some => ctrl.mapFields[some].type != ctrl.mapFields[field].type);
+          if(differentKinds.length > 0){
+            ctrl.mapFields[field].checkbox = false;
+          }
+        }
+
+
+
         event.stopPropagation();
       }
 

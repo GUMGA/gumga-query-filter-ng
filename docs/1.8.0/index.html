@@ -61,8 +61,8 @@ bower install gumga-query-filter-ng --save
             <div class="col-xs-6">
               <gumga-query search="pessoas.methods.search(field,param)" advanced-search="pessoas.methods.advancedSearch(param)" search-text="Pesquisar"
                 saved-filters="pessoas.methods.getQuery(page)" save-query="pessoas.methods.postQuery(query, name)">
-                <search-field field="name" label="Nome"></search-field>
-                <search-field field="age" label="Idade" select="true"></search-field>
+                <search-field type="string" field="name" label="Nome"></search-field>
+                <search-field type="number" field="age" label="Idade" select="true"></search-field>
                 <advanced-search-field type="string" label="Nome" field="nome"></advanced-search-field>
                 <advanced-search-field type="number" label="Idade" field="idade"></advanced-search-field>
                 <advanced-search-field type="float" label="Peso" field="peso"></advanced-search-field>

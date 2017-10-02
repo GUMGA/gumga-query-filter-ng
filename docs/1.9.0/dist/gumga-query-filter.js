@@ -103,7 +103,7 @@ Search.$inject = ['$q', '$timeout', '$compile', '$interpolate'];
 
 function Search($q, $timeout, $compile, $interpolate) {
 
-  var template = '\n     <div class="input-group">\n        <input type="text" placeholder="Busque seus filtros salvos" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event, \'TYPEAHEAD\')" uib-typeahead="item.description for item in ctrl.proxyFn($viewValue)" typeahead-on-select="ctrl.filterSelect($item, $model, $label, $event)" ng-show="ctrl.hasQuerySaved && openFilter"/>\n        <input type="text" ng-disabled="ctrl.getActivesFields().length == 0" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />\n        <span class="input-group-btn" uib-dropdown uib-keyboard-nav auto-close="outsideClick">\n          <button class="btn btn-default" type="button" uib-dropdown-toggle>\n            <span class="glyphicon glyphicon-chevron-down"><span>\n          </button>\n          <ul uib-dropdown-menu role="menu" aria-labelledby="single-button" class="dropdown-menu-search">\n            <li role="menuitem" ng-repeat="(key, $value) in ctrl.mapFields" style="{{ctrl.isDisabled($value.field) ? \'opacity: 0.3;\' : \'\'}}">\n              <a class="no-padding-search-fields">\n                <label ng-click="ctrl.checkFields($event, $value.field)">\n                  <input type="checkbox" ng-model="$value.checkbox" style="pointer-events: none;"/>\n                  {{::$value.label}}\n                </label>\n              </a>\n            </li>\n          </ul>\n          <button class="btn btn-default" ng-click="openFilter = !openFilter" type="button">\n            <span class="glyphicon glyphicon-filter"></span>\n          </button>\n          <button class="btn btn-primary" type="button" ng-click="ctrl.doSearch(ctrl.searchField)">\n            <span> {{::ctrl.searchText}} </span>\n            <span class="glyphicon glyphicon-search rotate-search-glyph"></span>\n          </button>\n        </span>\n      </div>\n      <div class="row replace-filter">\n        <div class="col-md-12">\n          <div id="replaceFilter"></div>\n        </div>\n      </div>';
+  var template = '\n     <div class="input-group">\n        <input type="text" placeholder="Busque seus filtros salvos" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event, \'TYPEAHEAD\')" uib-typeahead="item.description for item in ctrl.proxyFn($viewValue)" typeahead-on-select="ctrl.filterSelect($item, $model, $label, $event)" ng-show="ctrl.hasQuerySaved && openFilter"/>\n        <input type="text" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />\n        <span class="input-group-btn" uib-dropdown uib-keyboard-nav auto-close="outsideClick">\n          <button class="btn btn-default" type="button" uib-dropdown-toggle>\n            <span class="glyphicon glyphicon-chevron-down"><span>\n          </button>\n          <ul uib-dropdown-menu role="menu" aria-labelledby="single-button" class="dropdown-menu-search">\n            <li role="menuitem" ng-repeat="(key, $value) in ctrl.mapFields">\n              <a class="no-padding-search-fields">\n                <label ng-click="ctrl.checkFields($event, $value.field)">\n                  <input type="checkbox" ng-model="$value.checkbox" />\n                  {{::$value.label}}\n                </label>\n              </a>\n            </li>\n          </ul>\n          <button class="btn btn-default" ng-click="openFilter = !openFilter" type="button">\n            <span class="glyphicon glyphicon-filter"></span>\n          </button>\n          <button class="btn btn-primary" type="button" ng-click="ctrl.doSearch(ctrl.searchField)">\n            <span> {{::ctrl.searchText}} </span>\n            <span class="glyphicon glyphicon-search rotate-search-glyph"></span>\n          </button>\n        </span>\n      </div>\n      <div class="row replace-filter">\n        <div class="col-md-12">\n          <div id="replaceFilter"></div>\n        </div>\n      </div>';
 
   controller.$inject = ['$scope', '$element', '$attrs', '$transclude'];
 
@@ -134,13 +134,11 @@ function Search($q, $timeout, $compile, $interpolate) {
             field = element.attr('field') ? element.attr('field') : '',
             type = element.attr('type') ? element.attr('type') : 'string',
             checkbox = !!$scope.$eval(element.attr('select')),
-            label = element.attr('label') ? $interpolate(element.attr('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1)),
-            innerJoin = element.attr('inner-join') ? element.attr('inner-join').split(',') : [],
-            leftJoin = element.attr('left-join') ? element.attr('left-join').split(',') : [];
+            label = element.attr('label') ? $interpolate(element.attr('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1));
 
         if (!field) console.error(FIELD_ERR);
         if (checkbox) alreadySelected = true;
-        ctrl.mapFields[field] = { checkbox: checkbox, label: label, field: field, type: type, innerJoin: innerJoin, leftJoin: leftJoin };
+        ctrl.mapFields[field] = { checkbox: checkbox, label: label, field: field, type: type };
       });
 
       if (!alreadySelected) {
@@ -192,32 +190,8 @@ function Search($q, $timeout, $compile, $interpolate) {
       if (ctrl.useGquery) {
         var query = new GQuery();
         result = result.split(',');
-
-        var innerJoins = [];
-        var leftJoins = [];
-
-        Object.keys(ctrl.mapFields).map(function (key) {
-          return ctrl.mapFields[key];
-        }).forEach(function (field) {
-          if (field.innerJoin) {
-            field.innerJoin.forEach(function (innerJoin) {
-              if (innerJoins.indexOf(innerJoin) == -1) {
-                innerJoins.push(innerJoin);
-              }
-            });
-          }
-
-          if (field.leftJoin) {
-            field.leftJoin.forEach(function (leftJoin) {
-              if (leftJoins.indexOf(leftJoin) == -1) {
-                leftJoins.push(leftJoin);
-              }
-            });
-          }
-        });
-
         result.forEach(function (field, index) {
-          var criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined ? '' : param);
+          var criteria = new Criteria(field, getComparisonOperatorByType(field), param);
           if (ctrl.mapFields[field].type == 'string') {
             criteria.setFieldFunction('lower(%s)');
             criteria.setValueFunction('lower(%s)');
@@ -229,20 +203,9 @@ function Search($q, $timeout, $compile, $interpolate) {
           }
         });
 
-        innerJoins.forEach(function (innerJoin) {
-          query.join(new Join(innerJoin, JoinType.INNER));
-        });
-
-        leftJoins.forEach(function (leftJoin) {
-          query.join(new Join(leftJoin, JoinType.LEFT));
-        });
-
-        if ($attrs.lastGquery) {
-          ctrl.lastGquery = angular.copy(query);
-        }
         ctrl.search({ param: query });
       } else {
-        ctrl.search({ field: result, param: param });
+        ctrl.search({ result: result, param: param });
       }
     }
 
@@ -257,36 +220,13 @@ function Search($q, $timeout, $compile, $interpolate) {
       if (typeof open !== 'undefined') $scope.$broadcast('openOrCloseFilter', open);
     });
 
-    ctrl.getActivesFields = function () {
-      return Object.keys(ctrl.mapFields).filter(function (value) {
+    ctrl.checkFields = function (event, field) {
+      var someChecked = Object.keys(ctrl.mapFields).filter(function (value) {
         return !!ctrl.mapFields[value].checkbox;
       });
-    };
-
-    ctrl.isDisabled = function (field) {
-      var someChecked = ctrl.getActivesFields();
-      if (ctrl.mapFields[field] && ctrl.mapFields[field].type) {
-        var differentKinds = someChecked.filter(function (some) {
-          return ctrl.mapFields[some].type != ctrl.mapFields[field].type;
-        });
-        return differentKinds.length > 0;
+      if (someChecked.length == 1 && someChecked[0] == field || Object.keys(ctrl.mapFields).length == 1) {
+        event.preventDefault();
       }
-    };
-
-    ctrl.checkFields = function (event, field) {
-      var someChecked = ctrl.getActivesFields();
-      // if ((someChecked.length == 1 && someChecked[0] == field) || Object.keys(ctrl.mapFields).length == 1) {
-      //   event.preventDefault();
-      // }
-      if (ctrl.mapFields[field] && ctrl.mapFields[field].type) {
-        var differentKinds = someChecked.filter(function (some) {
-          return ctrl.mapFields[some].type != ctrl.mapFields[field].type;
-        });
-        if (differentKinds.length > 0) {
-          ctrl.mapFields[field].checkbox = false;
-        }
-      }
-
       event.stopPropagation();
     };
 
@@ -309,8 +249,7 @@ function Search($q, $timeout, $compile, $interpolate) {
       containerAdvanced: '@?',
       savedFilters: '&?',
       saveQuery: '&?',
-      useGquery: '=?',
-      lastGquery: '=?'
+      useGquery: '=?'
     },
     bindToController: true,
     transclude: true,
@@ -483,7 +422,7 @@ function HQLFactory($filter) {
     hqlObjects['gt'] = { key: 'GREATER', hql: ' gt ', label: ' maior que ', before: ' >   ', after: '' };
     hqlObjects['le'] = { key: 'LOWER_EQUAL', hql: ' le ', label: ' menor igual ', before: ' <=  ', after: '' };
     hqlObjects['lt'] = { key: 'LOWER', hql: ' lt ', label: ' menor que ', before: ' < upper(\'', after: '\')' };
-    hqlObjects['in'] = { key: 'IN', hql: ' in ', label: ' em', before: ' in (', after: ')' };
+    hqlObjects['in'] = { key: 'IN_ELEMENTS', hql: ' in ', label: ' em', before: ' in (', after: ')' };
     hqlObjects['is'] = { key: 'IS', hql: ' is ', label: ' est\xE1 ', before: ' is ', after: '' };
     hqlObjects['date_eq'] = { key: 'EQUAL', hql: ' eq ', label: ' igual ', before: ' >= ', after: '' };
     hqlObjects['date_ne'] = { key: 'NOT_EQUAL', hql: ' ne ', label: ' diferente de ', before: ' <= ', after: '' };
@@ -496,54 +435,16 @@ function HQLFactory($filter) {
     });
   }
 
-  function setJoins(mapObj, gQuery) {
-    var innerJoins = [];
-    var leftJoins = [];
-    Object.keys(mapObj).map(function (key) {
-      return mapObj[key];
-    }).forEach(function (field) {
-      if (field.query && field.query.attribute) {
-        field.query.attribute.innerJoin.forEach(function (innerJoin) {
-          if (innerJoins.indexOf(innerJoin) == -1) {
-            innerJoins.push(innerJoin);
-          }
-        });
-        field.query.attribute.leftJoin.forEach(function (leftJoin) {
-          if (leftJoins.indexOf(leftJoin) == -1) {
-            leftJoins.push(leftJoin);
-          }
-        });
-      }
-    });
-    innerJoins.forEach(function (innerJoin) {
-      gQuery = gQuery.join(new Join(innerJoin, JoinType.INNER));
-    });
-
-    leftJoins.forEach(function (leftJoin) {
-      gQuery = gQuery.join(new Join(leftJoin, JoinType.LEFT));
-    });
-  }
-
-  var createCriteriaLower = function createCriteriaLower(query) {
-    var criteria = new Criteria(query.attribute.field, query.condition.key, query.value);
-    if (query.attribute.type == 'string') {
-      criteria.setFieldFunction('lower(%s)');
-      criteria.setValueFunction('lower(%s)');
-    }
-    return criteria;
-  };
-
   function generateGQuery(mapObj) {
     var query = null;
     var querys = Object.keys(mapObj).map(function (key) {
       return mapObj[key];
     });
     var i = 0;
+
     if (querys[i].query.attribute.type == 'date') {
       var value = new Date(Date.parse(querys[i].query.value.replace(/(\d{2})(\d{2})(\d{4})/, "$2/$1/$3")));
       query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, value));
-    } else if (querys[i].query.attribute.type == 'string') {
-      query = new GQuery(null, createCriteriaLower(querys[i].query));
     } else {
       query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, querys[i].query.value));
     }
@@ -554,7 +455,11 @@ function HQLFactory($filter) {
       if (querys[i].query.attribute.type == 'date') {
         _value = new Date(Date.parse(_value.replace(/(\d{2})(\d{2})(\d{4})/, "$2/$1/$3")));
       }
-      query = query[previousValue.query.value.toLowerCase()](createCriteriaLower(querys[i].query));
+      if (previousValue.query.value.toLowerCase() === 'and') {
+        query = query.and(new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, _value));
+      } else {
+        query = query.or(new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, _value));
+      }
     }
 
     return query;
@@ -563,14 +468,10 @@ function HQLFactory($filter) {
   function createHql() {
     var mapObj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var useGQuery = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    var scopeParent = arguments[2];
 
     if (useGQuery) {
-      scopeParent.ctrl.lastGquery = generateGQuery(mapObj);
-      setJoins(mapObj, scopeParent.ctrl.lastGquery);
-      return scopeParent.ctrl.lastGquery;
+      return generateGQuery(mapObj);
     }
-
     var aqo = [];
     var aq = Object.keys(mapObj).filter(function (value) {
       return mapObj[value].active && mapObj[value].query.value;
@@ -808,28 +709,22 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       $scope.$on('filter-items', function (err, data) {
         var value = JSON.parse(data.value);
         $scope.controlMap = {};
-        if ($scope.useGquery) {
-          $timeout(function () {
-            return $scope.search({ param: value });
-          });
-        } else {
-          JSON.parse(value.source).forEach(function (val, index) {
-            if (index % 2 == 0) {
-              $scope.controlMap[index] = QueryModelFactory.create(val, true, 'EVERYTHING_NEEDED', zIndexInitial--);
-            } else {
-              $scope.controlMap[index] = QueryModelFactory.create({ value: val.value, label: val.value === 'AND' ? 'E' : 'OU' }, undefined, 'EVERYTHING_NEEDED', zIndexInitial--);
-            }
-          });
-          $scope.filterSelectItem = data;
-          $timeout(function () {
-            return $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
-          });
-        }
+        JSON.parse(value.source).forEach(function (val, index) {
+          if (index % 2 == 0) {
+            $scope.controlMap[index] = QueryModelFactory.create(val, true, 'EVERYTHING_NEEDED', zIndexInitial--);
+          } else {
+            $scope.controlMap[index] = QueryModelFactory.create({ value: val.value, label: val.value === 'AND' ? 'E' : 'OU' }, undefined, 'EVERYTHING_NEEDED', zIndexInitial--);
+          }
+        });
+        $scope.filterSelectItem = data;
+        $timeout(function () {
+          return $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
+        });
       });
 
       $scope.getTextQuery = function ($value) {
         var toReturn = 'valor';
-        if ($value && $value.query && $value.query.attribute) {
+        if ($value.query.attribute) {
           if ($value.query.attribute.type && $value.query.attribute.type == 'select' && $value.query.value != undefined && $value.query.value != null) {
             var data = $value.query.attribute.extraProperties.data.filter(function (data) {
               return data.field == $value.query.value;
@@ -871,8 +766,6 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
           var field = value.getAttribute('field'),
               type = value.getAttribute('type'),
-              innerJoin = value.getAttribute('inner-join') ? value.getAttribute('inner-join').split(',') : [],
-              leftJoin = value.getAttribute('left-join') ? value.getAttribute('left-join').split(',') : [],
               label = value.getAttribute('label') ? $interpolate(value.getAttribute('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1)),
               extraProperties = {};
 
@@ -884,7 +777,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
           if (!HQLFactory.useType(type)) return console.error(TYPE_ERR.replace('{1}', type));
 
-          $scope._attributes.push({ field: field, type: type, label: label, extraProperties: extraProperties, innerJoin: innerJoin, leftJoin: leftJoin });
+          $scope._attributes.push({ field: field, type: type, label: label, extraProperties: extraProperties });
         });
       });
 
@@ -951,6 +844,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       }
 
       function deleteFilter(filterId) {
+        console.log(filterId);
         //TODO fazer o deletar filtro
       }
 
@@ -966,7 +860,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
             scope.$value.removeState('ATTRIBUTE_AND_CONDITION').addState('UPDATING_VALUE');
             compileContent(key, scope);
           } else {
-            $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
+            $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
           }
         });
       }
@@ -1083,7 +977,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
       function saveSearch(name, event) {
         if (!event || event.keyCode == 13) {
-          $scope.$parent.proxySave(HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent), $scope.nameSearch);
+          $scope.$parent.proxySave(HQLFactory.createHql($scope.controlMap, $scope.useGquery), $scope.nameSearch);
           $scope.saveFilterOpen = !$scope.saveFilterOpen;
           $scope.nameSearch = '';
         }
@@ -1123,12 +1017,12 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
         if (scope.$value.query.value === 'AND') {
           scope.$value.query.value = 'OR';
           scope.$value.query.label = 'OU';
-          $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
+          $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
           return;
         }
         scope.$value.query.value = 'AND';
         scope.$value.query.label = 'E';
-        $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
+        $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
       }
 
       document.addEventListener('click', function (e) {
@@ -1204,10 +1098,10 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
             return scopeBeingUpdated.$value.removeState('UPDATING_VALUE').removeState('ATTRIBUTE_AND_CONDITION').addState('EVERYTHING_NEEDED');
           });
           getElm('_panelValue' + updatingValue).removeClass('show');
-          $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
+          $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery) });
         }
         if (typeSearch == "remove") {
-          var param = positionCondition == 0 ? {} : HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent);
+          var param = positionCondition == 0 ? {} : HQLFactory.createHql($scope.controlMap, $scope.useGquery);
           $scope.search({ param: param });
         }
       }
