@@ -17,7 +17,7 @@
         <h1>Gumga Query Filter</h1>
 
         <form name="Example">
-            <gumga-query use-gquery="false"
+            <gumga-query use-gquery="true"
                          search="searchWithGQuery(param)"
                          advanced-search="searchWithGQuery(param)" search-text="Pesquisar"
               saved-filters="apresentacoes.methods.getQuery(page)" save-query="apresentacoes.methods.postQuery(query, name)">
@@ -29,6 +29,7 @@
               <advanced-search-field type="string" inner-join="obj.product as p" label="Nome da Apresentação" field="p.name"></advanced-search-field>
               <advanced-search-field type="number" label="Id" field="id"></advanced-search-field>
               <advanced-search-field type="date" label="Editado em" field="editedByLast"></advanced-search-field>
+              <advanced-search-field type="boolean" label="hidden" field="hidden"></advanced-search-field>
               </gumga-query>
         </form> <br>
 
@@ -69,7 +70,7 @@
 
 
         $scope.searchWithGQuery = function(gquery){
-          // console.log(gquery);
+           console.log(gquery);
           // var pessoaFiltro = new GQuery(new Criteria('sexo', ComparisonOperator.EQUAL, 'feminino'));
           // gQuery = gQuery.and(pessoaFiltro);
           // console.log(gQuery);

@@ -402,12 +402,12 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       }
 
       function validatonValue($value) {
-        return $value.isNOTHING()
+        return $value && ($value.isNOTHING()
           || $value.isUPDATING_ATTRIBUTE()
           || $value.isUPDATING_VALUE()
           || $value.isUPDATING_CONDITION()
           || !($value.isEVERYTHING_NEEDED() || !$value.isATTRIBUTE_AND_CONDITION())
-          || (!isAnyQueryNotOk() && $value.isEVERYTHING_NEEDED())
+          || (!isAnyQueryNotOk() && $value.isEVERYTHING_NEEDED()))
       }
 
 

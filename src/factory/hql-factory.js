@@ -270,7 +270,9 @@ function HQLFactory($filter){
       query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, value));
     }else if(querys[i].query.attribute.type == 'string'){
       query = new GQuery(null, createCriteriaLower(querys[i].query));
-    }else{
+    }else if(querys[i].query.attribute.type == 'boolean') {
+      query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, querys[i].query.value === 'true'));
+    } else {
       query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, querys[i].query.value));
     }
 
