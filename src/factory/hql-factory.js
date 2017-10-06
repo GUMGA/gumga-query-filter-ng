@@ -252,8 +252,8 @@ function HQLFactory($filter){
     })
   }
 
-  const createCriteriaLower = query => {
-    let criteria = new Criteria(query.attribute.field, query.condition.key, query.value);
+  const createCriteriaLower = (query, value) => {
+    let criteria = new Criteria(query.attribute.field, query.condition.key, (value == undefined ? query.value : value));
     if(query.attribute.type == 'string'){
       criteria.setFieldFunction('lower(%s)');
       criteria.setValueFunction('lower(%s)');
@@ -265,6 +265,9 @@ function HQLFactory($filter){
     let query = null;
     let querys = Object.keys(mapObj).map(key => mapObj[key]);
     let i=0;
+
+    // console.log(querys)
+    
     if(querys[i].query.attribute.type == 'date'){
       let value = new Date(Date.parse(querys[i].query.value.replace( /(\d{2})(\d{2})(\d{4})/, "$2/$1/$3")));
       query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, value));
@@ -272,7 +275,9 @@ function HQLFactory($filter){
       query = new GQuery(null, createCriteriaLower(querys[i].query));
     }else if(querys[i].query.attribute.type == 'boolean') {
       query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, querys[i].query.value === 'true'));
-    } else {
+    } else if(querys[i].query.attribute.type == 'number') {
+        query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, Number(querys[i].query.value)));
+    } else {        
       query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, querys[i].query.value));
     }
 
@@ -281,8 +286,12 @@ function HQLFactory($filter){
       let value = querys[i].query.value;
       if(querys[i].query.attribute.type == 'date'){
         value = new Date(Date.parse(value.replace( /(\d{2})(\d{2})(\d{4})/, "$2/$1/$3")));
+      } else if(querys[i].query.attribute.type == 'boolean') {
+        value = value == 'true'
+      } else if(querys[i].query.attribute.type == 'number') {
+        value = Number(value)
       }
-      query = query[previousValue.query.value.toLowerCase()](createCriteriaLower(querys[i].query));
+      query = query[previousValue.query.value.toLowerCase()](createCriteriaLower(querys[i].query, value));
     }
 
     return query;
@@ -290,7 +299,7 @@ function HQLFactory($filter){
 
   function createHql(mapObj = {}, useGQuery = false, scopeParent){
     if(useGQuery){
-      scopeParent.ctrl.lastGquery = generateGQuery(mapObj);
+      scopeParent.ctrl.lastGquery = generateGQuery(mapObj);      
       setJoins(mapObj, scopeParent.ctrl.lastGquery);
       return scopeParent.ctrl.lastGquery;
     }

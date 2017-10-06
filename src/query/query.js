@@ -5,9 +5,21 @@
   function Search($q, $timeout, $compile, $interpolate){
 
     let template = `
+    <style>
+      gumga-query .gumga-date {
+        left:0 !important;
+        top:35px;
+      }
+    </style>
      <div class="input-group">
         <input type="text" placeholder="Busque seus filtros salvos" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event, 'TYPEAHEAD')" uib-typeahead="item.description for item in ctrl.proxyFn($viewValue)" typeahead-on-select="ctrl.filterSelect($item, $model, $label, $event)" ng-show="ctrl.hasQuerySaved && openFilter"/>
-        <input type="text" ng-disabled="ctrl.getActivesFields().length == 0" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />
+            
+        <input type="number" ng-if="ctrl.getInputType() == 'number'" ng-disabled="ctrl.getActivesFields().length == 0" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />
+        <input type="text" ng-if="ctrl.getInputType() == 'text'" ng-disabled="ctrl.getActivesFields().length == 0" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />
+        
+        <input type="date" ng-if="ctrl.getInputType() == 'date' && !ctrl.useGumgaDate()" ng-disabled="ctrl.getActivesFields().length == 0" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />
+        <gumga-date ng-if="ctrl.getInputType() == 'date' && ctrl.useGumgaDate()" ng-model="ctrl.searchField" ng-disabled="ctrl.getActivesFields().length == 0" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter"></gumga-date>
+        
         <span class="input-group-btn" uib-dropdown uib-keyboard-nav auto-close="outsideClick">
           <button class="btn btn-default" type="button" uib-dropdown-toggle>
             <span class="glyphicon glyphicon-chevron-down"><span>
@@ -103,6 +115,29 @@
         element.replaceWith($compile(template)($scope))
       }
 
+      const getTypeInputByTypeField = (type) => {
+        switch(type){
+          case 'string':
+            return 'text';
+          case 'number':
+            return 'number';
+          case 'date':
+            return 'date';
+          default:
+            return 'text';  
+        }
+      }
+
+      ctrl.getInputType = () => {
+        let selecteds = Object
+        .keys(ctrl.mapFields)
+        .filter(value => !!ctrl.mapFields[value].checkbox);
+        if(selecteds.length == 0) ctrl.searchSimpleType = 'text';
+        let type = ctrl.mapFields[selecteds[0]] && ctrl.mapFields[selecteds[0]].type ? ctrl.mapFields[selecteds[0]].type : 'string';
+        ctrl.searchSimpleType = getTypeInputByTypeField(type);
+        return ctrl.searchSimpleType;
+      }
+
       function doSearch(param, event = { keyCode: 13 }, inputType){
           if(event.keyCode !== 13 || inputType == 'TYPEAHEAD') return;
           let result = Object
@@ -110,6 +145,8 @@
                       .filter(value => !!ctrl.mapFields[value].checkbox)
                       .reduce((prev, next) => (prev += next.concat(',')), '')
                       .slice(0, -1);
+
+
 
           if(result.length === 0) return;
           if(ctrl.useGquery){
@@ -119,7 +156,11 @@
             let innerJoins = [];
             let leftJoins = [];
 
-            Object.keys(ctrl.mapFields).map(key => {
+            let selecteds = Object
+            .keys(ctrl.mapFields)
+            .filter(value => !!ctrl.mapFields[value].checkbox);
+
+            selecteds.map(key => {
               return ctrl.mapFields[key];
             }).forEach(field => {
               if (field.innerJoin) {
@@ -141,11 +182,16 @@
             })
 
             result.forEach((field, index) => {
-              let criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined ? '' : param);
-              if(ctrl.mapFields[field].type == 'string'){
+              let criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? '' : param);
+              if(ctrl.mapFields[field].type == 'number') {
+                criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? 0 : Number(param));
+              } else if(ctrl.mapFields[field].type == 'date') {
+                criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? new Date() : param);
+              } else if(ctrl.mapFields[field].type == 'string') {
                 criteria.setFieldFunction('lower(%s)');
                 criteria.setValueFunction('lower(%s)');
               }
+              
               if(index == 0){
                 query = new GQuery(criteria);
               }else{
@@ -198,9 +244,12 @@
         // if ((someChecked.length == 1 && someChecked[0] == field) || Object.keys(ctrl.mapFields).length == 1) {
         //   event.preventDefault();
         // }
+        if(ctrl.mapFields[field] && ctrl.mapFields[field].type && getTypeInputByTypeField(ctrl.mapFields[field].type) != ctrl.searchSimpleType){
+          delete ctrl.searchField;
+        }
         if(ctrl.mapFields[field] && ctrl.mapFields[field].type){
-          let differentKinds = someChecked.filter(some => ctrl.mapFields[some].type != ctrl.mapFields[field].type);
-          if(differentKinds.length > 0){
+          let differentKinds = someChecked.filter(some => ctrl.mapFields[some].type != ctrl.mapFields[field].type);        
+          if(differentKinds.length > 0){          
             ctrl.mapFields[field].checkbox = false;
           }
         }
@@ -208,6 +257,14 @@
 
 
         event.stopPropagation();
+      }
+
+      ctrl.useGumgaDate = function() {
+        try {
+          return !!angular.module('gumga.date');
+        } catch (error) {
+          return false;
+        }
       }
 
       function proxyFn($value){
