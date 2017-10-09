@@ -186,7 +186,7 @@
               if(ctrl.mapFields[field].type == 'number') {
                 criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? 0 : Number(param));
               } else if(ctrl.mapFields[field].type == 'date') {
-                criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? new Date() : param);
+                criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? new Date() : new Date(param));
               } else if(ctrl.mapFields[field].type == 'string') {
                 criteria.setFieldFunction('lower(%s)');
                 criteria.setValueFunction('lower(%s)');
