@@ -17,6 +17,9 @@ function HQLFactory($filter){
 
   let SUPPORTED_TYPES = {}
 
+  const SOURCE_CHARS = "'âàãáÁÂÀÃéêÉÊíÍóôõÓÔÕüúÜÚÇç'";
+  const TARGET_CHARS = "'AAAAAAAAEEEEIIOOOOOOUUUUCC'";
+
   SUPPORTED_TYPES['string'] = {
     validator: (string) => (typeof string === 'string' || string instanceof String),
     defaultCondition: hqlObjectCreator(['contains']),
@@ -255,10 +258,28 @@ function HQLFactory($filter){
   const createCriteriaLower = (query, value) => {
     let criteria = new Criteria(query.attribute.field, query.condition.key, (value == undefined ? query.value : value));
     if(query.attribute.type == 'string'){
-      criteria.setFieldFunction('lower(%s)');
-      criteria.setValueFunction('lower(%s)');
+      criteria.setFieldFunction('%s');
+      criteria.setValueFunction('%s');
+        
+      if(query.attribute.ignoreCase) {
+          criteria.setFieldFunction(addIgnoreCase(criteria.getFieldFunction()));
+          criteria.setValueFunction(addIgnoreCase(criteria.getValueFunction()));
+      }
+
+      if(query.attribute.translate) {
+          criteria.setFieldFunction(addTranslate(criteria.getFieldFunction()));
+          criteria.setValueFunction(addTranslate(criteria.getValueFunction()));
+      }
     }
     return criteria;
+  }
+
+  function addIgnoreCase(value) {
+    return value.replace(/%s/g, "lower(%s)");
+  }
+
+  function addTranslate(value) {
+      return value.replace(/%s/g, "translate(%s, "+SOURCE_CHARS+","+TARGET_CHARS+")");
   }
 
   function generateGQuery(mapObj){

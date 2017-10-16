@@ -21,15 +21,11 @@
                          search="searchWithGQuery(param)"
                          advanced-search="searchWithGQuery(param)" search-text="Pesquisar"
               saved-filters="apresentacoes.methods.getQuery(page)" save-query="apresentacoes.methods.postQuery(query, name)">
-              <search-field type="number" field="id" label="id" select="true"></search-field>
-              <search-field type="date" field="data" label="Data"></search-field>
-              <search-field type="string" inner-join="obj.product as p, obj.product2 as p2" left-join="obj.product as p" field="p.name" label="Nome"></search-field>
-              <search-field type="string" inner-join="obj.product as p" field="p.apelido" label="Apelido"></search-field>
+              <search-field type="number" field="obj.id" label="Id Usuario"></search-field>
+              <search-field type="string" field="obj.name" translate="false" ignore-case="false" label="Nome Usuario" select="true"></search-field>
+              <search-field type="string" field="org.name" inner-join="obj.organizations as org" label="Nome Organização"></search-field>
 
-              <advanced-search-field type="string" inner-join="obj.product as p" label="Nome da Apresentação" field="p.name"></advanced-search-field>
-              <advanced-search-field type="number" label="Id" field="id" inner-join="teste"></advanced-search-field>
-              <advanced-search-field type="date" label="Editado em" field="editedByLast"></advanced-search-field>
-              <advanced-search-field type="boolean" label="hidden" field="hidden"></advanced-search-field>
+              <advanced-search-field type="string" translate="false" label="Nome Usuario" field="obj.name"></advanced-search-field>
               </gumga-query>
         </form> <br>
 
@@ -61,7 +57,7 @@
       })
       .controller('ctrl', ['gumgaController', 'GumgaRest', '$scope', '$http', function (gumgaController, GumgaRest, $scope, $http) {
 
-        var PessoaService = new GumgaRest('http://192.168.112.227:8080/dashboard-api/api/presentations');
+        var PessoaService = new GumgaRest('https://gumga.studio/dashboard-api/api/presentations');
         var UserService = new GumgaRest('http://localhost:8084/security-api/api/user');
 
         gumgaController.createRestMethods($scope, PessoaService, 'apresentacoes');
@@ -81,7 +77,7 @@
           // var pessoaFiltro = new GQuery(new Criteria('sexo', ComparisonOperator.EQUAL, 'feminino'));
           // gQuery = gQuery.and(pessoaFiltro);
           // console.log(gQuery);
-          // $scope.apresentacoes.methods.searchWithGQuery(gQuery);
+          // $scope.user.methods.searchWithGQuery(gquery);
         }
 
         $scope.sexos = [
