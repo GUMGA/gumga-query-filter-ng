@@ -14,7 +14,7 @@
      <div class="input-group">
         <input type="text" placeholder="Busque seus filtros salvos" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event, 'TYPEAHEAD')" uib-typeahead="item.description for item in ctrl.proxyFn($viewValue)" typeahead-on-select="ctrl.filterSelect($item, $model, $label, $event)" ng-show="ctrl.hasQuerySaved && openFilter"/>
             
-        <input type="number" ng-if="ctrl.getInputType() == 'number'" ng-disabled="ctrl.getActivesFields().length == 0" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />
+        <input type="number" ng-if="ctrl.getInputType() == 'number'" ng-disabled="ctrl.getActivesFields().length == 0 || openFilter" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />
         <input type="text" ng-if="ctrl.getInputType() == 'text'" ng-disabled="ctrl.getActivesFields().length == 0" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />
         
         <input type="date" ng-if="ctrl.getInputType() == 'date' && !ctrl.useGumgaDate()" ng-disabled="ctrl.getActivesFields().length == 0" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />
@@ -37,7 +37,7 @@
           <button class="btn btn-default" ng-click="openFilter = !openFilter" type="button">
             <span class="glyphicon glyphicon-filter"></span>
           </button>
-          <button class="btn btn-primary" type="button" ng-click="ctrl.doSearch(ctrl.searchField)">
+          <button class="btn btn-primary" type="button" ng-click="ctrl.doSearch(ctrl.searchField)" ng-disabled="openFilter">
             <span> {{::ctrl.searchText}} </span>
             <span class="glyphicon glyphicon-search rotate-search-glyph"></span>
           </button>

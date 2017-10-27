@@ -1,6 +1,6 @@
 {
   "name": "gumga-query-filter-ng",
-  "version": "1.9.5",
+  "version": "1.10.0",
   "description": "Gumga Query Filter",
   "main": "./src/index.js",
   "directories": {
