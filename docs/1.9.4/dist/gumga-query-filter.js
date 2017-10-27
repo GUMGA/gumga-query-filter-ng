@@ -119,9 +119,6 @@ function Search($q, $timeout, $compile, $interpolate) {
     ctrl.mapFields = {};
     ctrl.possibleAdvancedFields = [];
 
-    var SOURCE_CHARS = "'âàãáÁÂÀÃéêÉÊíÍóôõÓÔÕüúÜÚÇç'";
-    var TARGET_CHARS = "'AAAAAAAAEEEEIIOOOOOOUUUUCC'";
-
     if (!hasAttr('search')) console.error(SEARCH_ERR);
 
     $transclude(function (transcludeElement) {
@@ -139,13 +136,11 @@ function Search($q, $timeout, $compile, $interpolate) {
             checkbox = !!$scope.$eval(element.attr('select')),
             label = element.attr('label') ? $interpolate(element.attr('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1)),
             innerJoin = element.attr('inner-join') ? element.attr('inner-join').split(',') : [],
-            leftJoin = element.attr('left-join') ? element.attr('left-join').split(',') : [],
-            ignoreCase = element.attr('ignore-case') == "false" ? false : true,
-            translate = element.attr('translate') == "false" ? false : true;
+            leftJoin = element.attr('left-join') ? element.attr('left-join').split(',') : [];
 
         if (!field) console.error(FIELD_ERR);
         if (checkbox) alreadySelected = true;
-        ctrl.mapFields[field] = { checkbox: checkbox, label: label, field: field, type: type, innerJoin: innerJoin, leftJoin: leftJoin, ignoreCase: ignoreCase, translate: translate };
+        ctrl.mapFields[field] = { checkbox: checkbox, label: label, field: field, type: type, innerJoin: innerJoin, leftJoin: leftJoin };
       });
 
       if (!alreadySelected) {
@@ -253,20 +248,10 @@ function Search($q, $timeout, $compile, $interpolate) {
           if (ctrl.mapFields[field].type == 'number') {
             criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? 0 : Number(param));
           } else if (ctrl.mapFields[field].type == 'date') {
-            criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? new Date() : new Date(param));
+            criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? new Date() : param);
           } else if (ctrl.mapFields[field].type == 'string') {
-            criteria.setFieldFunction('%s');
-            criteria.setValueFunction('%s');
-
-            if (ctrl.mapFields[field].ignoreCase) {
-              criteria.setFieldFunction(addIgnoreCase(criteria.getFieldFunction()));
-              criteria.setValueFunction(addIgnoreCase(criteria.getValueFunction()));
-            }
-
-            if (ctrl.mapFields[field].translate) {
-              criteria.setFieldFunction(addTranslate(criteria.getFieldFunction()));
-              criteria.setValueFunction(addTranslate(criteria.getValueFunction()));
-            }
+            criteria.setFieldFunction('lower(%s)');
+            criteria.setValueFunction('lower(%s)');
           }
 
           if (index == 0) {
@@ -291,14 +276,6 @@ function Search($q, $timeout, $compile, $interpolate) {
       } else {
         ctrl.search({ field: result, param: param });
       }
-    }
-
-    function addIgnoreCase(value) {
-      return value.replace(/%s/g, "lower(%s)");
-    }
-
-    function addTranslate(value) {
-      return value.replace(/%s/g, "translate(%s, " + SOURCE_CHARS + "," + TARGET_CHARS + ")");
     }
 
     function getComparisonOperatorByType(field) {
@@ -350,7 +327,7 @@ function Search($q, $timeout, $compile, $interpolate) {
 
     ctrl.useGumgaDate = function () {
       try {
-        return false; // !!angular.module('gumga.date');
+        return !!angular.module('gumga.date');
       } catch (error) {
         return false;
       }
@@ -413,9 +390,6 @@ function HQLFactory($filter) {
       FLOAT_REGEX = /^[0-9]+(\.[0-9]{1,2})?$/;
 
   var SUPPORTED_TYPES = {};
-
-  var SOURCE_CHARS = "'âàãáÁÂÀÃéêÉÊíÍóôõÓÔÕüúÜÚÇç'";
-  var TARGET_CHARS = "'AAAAAAAAEEEEIIOOOOOOUUUUCC'";
 
   SUPPORTED_TYPES['string'] = {
     validator: function validator(string) {
@@ -596,29 +570,11 @@ function HQLFactory($filter) {
   var createCriteriaLower = function createCriteriaLower(query, value) {
     var criteria = new Criteria(query.attribute.field, query.condition.key, value == undefined ? query.value : value);
     if (query.attribute.type == 'string') {
-      criteria.setFieldFunction('%s');
-      criteria.setValueFunction('%s');
-
-      if (query.attribute.ignoreCase) {
-        criteria.setFieldFunction(addIgnoreCase(criteria.getFieldFunction()));
-        criteria.setValueFunction(addIgnoreCase(criteria.getValueFunction()));
-      }
-
-      if (query.attribute.translate) {
-        criteria.setFieldFunction(addTranslate(criteria.getFieldFunction()));
-        criteria.setValueFunction(addTranslate(criteria.getValueFunction()));
-      }
+      criteria.setFieldFunction('lower(%s)');
+      criteria.setValueFunction('lower(%s)');
     }
     return criteria;
   };
-
-  function addIgnoreCase(value) {
-    return value.replace(/%s/g, "lower(%s)");
-  }
-
-  function addTranslate(value) {
-    return value.replace(/%s/g, "translate(%s, " + SOURCE_CHARS + "," + TARGET_CHARS + ")");
-  }
 
   function generateGQuery(mapObj) {
     var query = null;
@@ -972,9 +928,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
               innerJoin = value.getAttribute('inner-join') ? value.getAttribute('inner-join').split(',') : [],
               leftJoin = value.getAttribute('left-join') ? value.getAttribute('left-join').split(',') : [],
               label = value.getAttribute('label') ? $interpolate(value.getAttribute('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1)),
-              extraProperties = {},
-              ignoreCase = value.getAttribute('ignore-case') == "false" ? false : true,
-              translate = value.getAttribute('translate') == "false" ? false : true;
+              extraProperties = {};
 
           if (!type) return console.error(NOTYPE_ERR);
 
@@ -984,7 +938,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
           if (!HQLFactory.useType(type)) return console.error(TYPE_ERR.replace('{1}', type));
 
-          $scope._attributes.push({ field: field, type: type, label: label, extraProperties: extraProperties, innerJoin: innerJoin, leftJoin: leftJoin, ignoreCase: ignoreCase, translate: translate });
+          $scope._attributes.push({ field: field, type: type, label: label, extraProperties: extraProperties, innerJoin: innerJoin, leftJoin: leftJoin });
         });
       });
 

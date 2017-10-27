@@ -61,6 +61,9 @@
       ctrl.mapFields              = {}
       ctrl.possibleAdvancedFields = []
 
+      const SOURCE_CHARS = "'âàãáÁÂÀÃéêÉÊíÍóôõÓÔÕüúÜÚÇç'";
+      const TARGET_CHARS = "'AAAAAAAAEEEEIIOOOOOOUUUUCC'";
+
       if(!hasAttr('search')) console.error(SEARCH_ERR)
 
       $transclude((transcludeElement) => {
@@ -78,11 +81,13 @@
               checkbox  = !!$scope.$eval(element.attr('select')),
               label     = element.attr('label') ? $interpolate(element.attr('label'))(parentContext) : field.charAt(0).toUpperCase().concat(field.slice(1)),
               innerJoin = element.attr('inner-join') ? element.attr('inner-join').split(',') : [],
-              leftJoin = element.attr('left-join') ? element.attr('left-join').split(',') : [];
+              leftJoin = element.attr('left-join') ? element.attr('left-join').split(',') : [],
+              ignoreCase = element.attr('ignore-case') == "false" ? false : true,
+              translate = element.attr('translate') == "false" ? false : true;
 
           if(!field)      console.error(FIELD_ERR)
           if(checkbox)    alreadySelected = true
-          ctrl.mapFields[field] = { checkbox, label, field, type, innerJoin, leftJoin }
+          ctrl.mapFields[field] = { checkbox, label, field, type, innerJoin, leftJoin, ignoreCase, translate }
         })
 
         if(!alreadySelected){
@@ -186,10 +191,20 @@
               if(ctrl.mapFields[field].type == 'number') {
                 criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? 0 : Number(param));
               } else if(ctrl.mapFields[field].type == 'date') {
-                criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? new Date() : param);
+                criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? new Date() : new Date(param));
               } else if(ctrl.mapFields[field].type == 'string') {
-                criteria.setFieldFunction('lower(%s)');
-                criteria.setValueFunction('lower(%s)');
+                  criteria.setFieldFunction('%s');
+                  criteria.setValueFunction('%s');
+                  
+                if(ctrl.mapFields[field].ignoreCase) {
+                    criteria.setFieldFunction(addIgnoreCase(criteria.getFieldFunction()));
+                    criteria.setValueFunction(addIgnoreCase(criteria.getValueFunction()));
+                }
+
+                if(ctrl.mapFields[field].translate) {
+                    criteria.setFieldFunction(addTranslate(criteria.getFieldFunction()));
+                    criteria.setValueFunction(addTranslate(criteria.getValueFunction()));
+                }
               }
               
               if(index == 0){
@@ -214,6 +229,14 @@
           }else{
             ctrl.search({ field: result, param: param })
           }
+      }
+
+      function addIgnoreCase(value) {
+        return value.replace(/%s/g, "lower(%s)");
+      }
+
+      function addTranslate(value) {
+          return value.replace(/%s/g, "translate(%s, "+SOURCE_CHARS+","+TARGET_CHARS+")");
       }
 
       function getComparisonOperatorByType(field){
@@ -261,7 +284,7 @@
 
       ctrl.useGumgaDate = function() {
         try {
-          return !!angular.module('gumga.date');
+          return false// !!angular.module('gumga.date');
         } catch (error) {
           return false;
         }
