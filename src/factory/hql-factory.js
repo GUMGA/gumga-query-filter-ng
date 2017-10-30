@@ -233,7 +233,7 @@ function HQLFactory($filter){
     Object.keys(mapObj).map(key => {
       return mapObj[key];
     }).forEach(field => {
-      if (field.query && field.query.attribute) {
+      if (field.query && field.query.attribute && field.query.attribute.innerJoin && field.query.attribute.leftJoin) {
         field.query.attribute.innerJoin.forEach(innerJoin => {
           if(innerJoins.indexOf(innerJoin) == -1){
             innerJoins.push(innerJoin);
@@ -287,8 +287,6 @@ function HQLFactory($filter){
     let querys = Object.keys(mapObj).map(key => mapObj[key]);
     let i=0;
 
-    // console.log(querys)
-    
     if(querys[i].query.attribute.type == 'date'){
       let value = new Date(Date.parse(querys[i].query.value.replace( /(\d{2})(\d{2})(\d{4})/, "$2/$1/$3")));
       query = new GQuery(null, new Criteria(querys[i].query.attribute.field, querys[i].query.condition.key, value));
@@ -319,9 +317,17 @@ function HQLFactory($filter){
   }
 
   function createHql(mapObj = {}, useGQuery = false, scopeParent){
+    let onlyActives = {};  
+
+    Object.keys(mapObj).forEach(key => {
+      if(mapObj[key].active){
+        onlyActives[key] = mapObj[key];
+      }
+    });
+
     if(useGQuery){
-      scopeParent.ctrl.lastGquery = generateGQuery(mapObj);      
-      setJoins(mapObj, scopeParent.ctrl.lastGquery);
+      scopeParent.ctrl.lastGquery = generateGQuery(onlyActives);      
+      setJoins(onlyActives, scopeParent.ctrl.lastGquery);
       return scopeParent.ctrl.lastGquery;
     }
 

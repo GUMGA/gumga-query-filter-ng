@@ -151,12 +151,21 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
                         <span> {{$value.query.label}} </span>
                       </button>
                     </div>
-                    <button type="button" style="z-index: 0;border-left: 1px solid #ccc; " class="btn btn-default" ng-click="removeQuery(this, $event, $index)" ng-show="!$value.query.label" ng-disabled="!$value.isEVERYTHING_NEEDED() || $value.isUPDATING_VALUE() ||(!isAnyQueryNotOk() && $value.isEVERYTHING_NEEDED()) ">
+                    <button type="button" 
+                            style="z-index: 0;border-left: 1px solid #ccc; " 
+                            class="btn btn-default" 
+                            ng-click="removeQuery(this, $event, $index)" 
+                            ng-show="!$value.query.label">
                       <span class="glyphicon glyphicon-remove"></span>
                     </button>
                     </div>
                   </div>
-                  <button id="single-button" type="button" class="btn btn-default" ng-click="addQuery()" ng-disabled="!isAnyQueryNotOk()" style="margin-top: 7.5px;" >
+                  <button id="single-button" 
+                          type="button" 
+                          class="btn btn-default" 
+                          ng-click="addQuery()" 
+                          ng-disabled="!isAnyQueryNotOk()" 
+                          style="margin-top: 7.5px;" >
                     <span class="glyphicon glyphicon-plus"></span>
                   </button>
                 </div>
@@ -383,10 +392,10 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
       function isAnyQueryNotOk() {
         return Object.keys($scope.controlMap).filter((intern) => {
-          return !$scope.controlMap[intern].isEVERYTHING_NEEDED()
-            || $scope.controlMap[intern].isUPDATING_ATTRIBUTE()
-            || $scope.controlMap[intern].isUPDATING_CONDITION()
-            || $scope.controlMap[intern].isUPDATING_VALUE()
+          return (!$scope.controlMap[intern].isEVERYTHING_NEEDED()
+          || $scope.controlMap[intern].isUPDATING_ATTRIBUTE()
+          || $scope.controlMap[intern].isUPDATING_CONDITION()
+          || $scope.controlMap[intern].isUPDATING_VALUE()) && $scope.controlMap[intern].active
         }).filter(value => (parseInt(value) % 2 == 0)).length === 0
       }
 
@@ -578,8 +587,10 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
           $scope.search({ param: HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent) });
         }
         if (typeSearch == "remove") {
-          let param = positionCondition == 0 ? {} : HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent);
-          $scope.search({ param: param });
+          $timeout(() => {
+            let param = positionCondition == 0 ? {} : HQLFactory.createHql($scope.controlMap, $scope.useGquery, $scope.$parent);
+            $scope.search({ param: param });
+          });
         }
       }
 
