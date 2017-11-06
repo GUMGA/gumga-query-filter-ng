@@ -180,7 +180,8 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
     scope: {
       search: '&',
       saveQuery: '&',
-      useGquery: '=?'
+      useGquery: '=?',
+      uid: '@?'
     },
     link: ($scope, $element, $attrs, $ctrl, $transclude) => {
       const outerScope = $scope.$parent.$parent
@@ -238,13 +239,13 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
          return toReturn;
       }
 
-      $scope.$on('openOrCloseFilter', (event, openOrClose) => {
+      $scope.$on('openOrCloseFilter'+$scope.uid, (event, openOrClose) => {
         if (!openOrClose) {
           delete $scope.filterSelectItem;
           Object.keys($scope.controlMap)
             .forEach(key => {
               const scope = getIndexScope(key)
-              scope.$value.active = false
+              scope.$value.active = false;
               delete $scope.controlMap[key]
               $timeout(_ => scope.$destroy())
             })
@@ -253,7 +254,8 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
           return
         }
 
-        if (!$scope.controlMap['0']) initialize()
+        // if (!$scope.controlMap['0']) 
+        initialize()
 
       })
 
@@ -286,7 +288,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       })
 
       if (!$scope._attributes[0]) return;
-      const getElm = string => angular.element(document.getElementById(string))
+      const getElm = string => angular.element($element.find('#'+string))
       const initialize = _ => {
         $scope.controlMap['0'] = QueryModelFactory.create({ attribute: {}, condition: {}, value: '' }, true, 'NOTHING', zIndexInitial--)
 
@@ -404,7 +406,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       }
 
       function getIndexScope(index = 0) {
-        let desiredScope = angular.element(document.getElementById('first')).scope()
+        let desiredScope = angular.element($element.find('#first')).scope()
         while (desiredScope.$index != index) {
           if (desiredScope.$$nextSibling == null) break;
           desiredScope = desiredScope.$$nextSibling
@@ -477,7 +479,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
       function showInput() {
         $scope.saveFilterOpen = true
-        $timeout(() => document.getElementById('_save').focus())
+        $timeout(() => $element.find('$_save').focus())
       }
 
       function saveSearch(name, event) {

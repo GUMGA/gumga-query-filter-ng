@@ -1,8 +1,8 @@
 // (function(){
   //Description
-  Search.$inject = ['$q','$timeout','$compile','$interpolate' ]
+  Search.$inject = ['$q','$timeout','$compile','$interpolate', '$rootScope' ]
 
-  function Search($q, $timeout, $compile, $interpolate){
+  function Search($q, $timeout, $compile, $interpolate, $rootScope){
 
     let template = `
     <style>
@@ -64,6 +64,18 @@
       const SOURCE_CHARS = "'âàãáÁÂÀÃéêÉÊíÍóôõÓÔÕüúÜÚÇç'";
       const TARGET_CHARS = "'AAAAAAAAEEEEIIOOOOOOUUUUCC'";
 
+      ctrl.uid = guid();
+      
+      function guid() {
+        function s4() {
+          return Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+        }
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+          s4() + '-' + s4() + s4() + s4();
+      }
+
       if(!hasAttr('search')) console.error(SEARCH_ERR)
 
       $transclude((transcludeElement) => {
@@ -114,10 +126,9 @@
       }
 
       function compileFilter(){
-        let template  = `<gumga-filter-core ng-show="openFilter" use-gquery="${$attrs.useGquery}" is-open="true" search="ctrl.proxySearch(param)" ${$attrs.saveQuery ? 'save-query="saveQuery(query, name)"' : ''}is-query="true">${ctrl.possibleAdvancedFields.reduce(((prev, next) => prev += next), '')}</gumga-filter-core>`,
-
-        element   = angular.element(document.getElementById(ctrl.containerAdvanced));
-        element.replaceWith($compile(template)($scope))
+        let template  = `<gumga-filter-core uid="${ctrl.uid}" ng-show="openFilter" use-gquery="${$attrs.useGquery}" is-open="true" search="ctrl.proxySearch(param)" ${$attrs.saveQuery ? 'save-query="saveQuery(query, name)"' : ''}is-query="true">${ctrl.possibleAdvancedFields.reduce(((prev, next) => prev += next), '')}</gumga-filter-core>`,
+        element   = angular.element($element.find('#'+ctrl.containerAdvanced));
+        element.replaceWith($compile(template)($scope));
       }
 
       const getTypeInputByTypeField = (type) => {
@@ -251,7 +262,7 @@
       }
 
       $scope.$watch('openFilter', (open) => {
-        if(typeof open !== 'undefined') $scope.$broadcast('openOrCloseFilter', open);
+        if(open != undefined) $rootScope.$broadcast('openOrCloseFilter'+ctrl.uid, open);
       })
 
       ctrl.getActivesFields = () => {

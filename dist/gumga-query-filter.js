@@ -99,9 +99,9 @@ angular.module('gumga.queryfilter.filter', ['gumga.queryfilter.filter.directive'
 
 // (function(){
 //Description
-Search.$inject = ['$q', '$timeout', '$compile', '$interpolate'];
+Search.$inject = ['$q', '$timeout', '$compile', '$interpolate', '$rootScope'];
 
-function Search($q, $timeout, $compile, $interpolate) {
+function Search($q, $timeout, $compile, $interpolate, $rootScope) {
 
   var template = '\n    <style>\n      gumga-query .gumga-date {\n        left:0 !important;\n        top:35px;\n      }\n    </style>\n     <div class="input-group">\n        <input type="text" placeholder="Busque seus filtros salvos" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event, \'TYPEAHEAD\')" uib-typeahead="item.description for item in ctrl.proxyFn($viewValue)" typeahead-on-select="ctrl.filterSelect($item, $model, $label, $event)" ng-show="ctrl.hasQuerySaved && openFilter"/>\n            \n        <input type="number" ng-if="ctrl.getInputType() == \'number\'" ng-disabled="ctrl.getActivesFields().length == 0 || openFilter" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />\n        <input type="text" ng-if="ctrl.getInputType() == \'text\'" ng-disabled="ctrl.getActivesFields().length == 0" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />\n        \n        <input type="date" ng-if="ctrl.getInputType() == \'date\' && !ctrl.useGumgaDate()" ng-disabled="ctrl.getActivesFields().length == 0" class="form-control" ng-model="ctrl.searchField" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter" />\n        <gumga-date ng-if="ctrl.getInputType() == \'date\' && ctrl.useGumgaDate()" ng-model="ctrl.searchField" ng-disabled="ctrl.getActivesFields().length == 0" ng-keyup="ctrl.doSearch(ctrl.searchField, $event)" ng-show="!ctrl.hasQuerySaved || !openFilter"></gumga-date>\n        \n        <span class="input-group-btn" uib-dropdown uib-keyboard-nav auto-close="outsideClick">\n          <button class="btn btn-default" type="button" uib-dropdown-toggle>\n            <span class="glyphicon glyphicon-chevron-down"><span>\n          </button>\n          <ul uib-dropdown-menu role="menu" aria-labelledby="single-button" class="dropdown-menu-search">\n            <li role="menuitem" ng-repeat="(key, $value) in ctrl.mapFields" style="{{ctrl.isDisabled($value.field) ? \'opacity: 0.3;\' : \'\'}}">\n              <a class="no-padding-search-fields">\n                <label ng-click="ctrl.checkFields($event, $value.field)">\n                  <input type="checkbox" ng-model="$value.checkbox" style="pointer-events: none;"/>\n                  {{::$value.label}}\n                </label>\n              </a>\n            </li>\n          </ul>\n          <button class="btn btn-default" ng-click="openFilter = !openFilter" type="button">\n            <span class="glyphicon glyphicon-filter"></span>\n          </button>\n          <button class="btn btn-primary" type="button" ng-click="ctrl.doSearch(ctrl.searchField)" ng-disabled="openFilter">\n            <span> {{::ctrl.searchText}} </span>\n            <span class="glyphicon glyphicon-search rotate-search-glyph"></span>\n          </button>\n        </span>\n      </div>\n      <div class="row replace-filter">\n        <div class="col-md-12">\n          <div id="replaceFilter"></div>\n        </div>\n      </div>';
 
@@ -121,6 +121,15 @@ function Search($q, $timeout, $compile, $interpolate) {
 
     var SOURCE_CHARS = "'âàãáÁÂÀÃéêÉÊíÍóôõÓÔÕüúÜÚÇç'";
     var TARGET_CHARS = "'AAAAAAAAEEEEIIOOOOOOUUUUCC'";
+
+    ctrl.uid = guid();
+
+    function guid() {
+      function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+      }
+      return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+    }
 
     if (!hasAttr('search')) console.error(SEARCH_ERR);
 
@@ -175,10 +184,10 @@ function Search($q, $timeout, $compile, $interpolate) {
     };
 
     function compileFilter() {
-      var template = '<gumga-filter-core ng-show="openFilter" use-gquery="' + $attrs.useGquery + '" is-open="true" search="ctrl.proxySearch(param)" ' + ($attrs.saveQuery ? 'save-query="saveQuery(query, name)"' : '') + 'is-query="true">' + ctrl.possibleAdvancedFields.reduce(function (prev, next) {
+      var template = '<gumga-filter-core uid="' + ctrl.uid + '" ng-show="openFilter" use-gquery="' + $attrs.useGquery + '" is-open="true" search="ctrl.proxySearch(param)" ' + ($attrs.saveQuery ? 'save-query="saveQuery(query, name)"' : '') + 'is-query="true">' + ctrl.possibleAdvancedFields.reduce(function (prev, next) {
         return prev += next;
       }, '') + '</gumga-filter-core>',
-          element = angular.element(document.getElementById(ctrl.containerAdvanced));
+          element = angular.element($element.find('#' + ctrl.containerAdvanced));
       element.replaceWith($compile(template)($scope));
     }
 
@@ -312,7 +321,7 @@ function Search($q, $timeout, $compile, $interpolate) {
     }
 
     $scope.$watch('openFilter', function (open) {
-      if (typeof open !== 'undefined') $scope.$broadcast('openOrCloseFilter', open);
+      if (open != undefined) $rootScope.$broadcast('openOrCloseFilter' + ctrl.uid, open);
     });
 
     ctrl.getActivesFields = function () {
@@ -886,7 +895,8 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
     scope: {
       search: '&',
       saveQuery: '&',
-      useGquery: '=?'
+      useGquery: '=?',
+      uid: '@?'
     },
     link: function link($scope, $element, $attrs, $ctrl, $transclude) {
       var outerScope = $scope.$parent.$parent;
@@ -950,7 +960,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
         return toReturn;
       };
 
-      $scope.$on('openOrCloseFilter', function (event, openOrClose) {
+      $scope.$on('openOrCloseFilter' + $scope.uid, function (event, openOrClose) {
         if (!openOrClose) {
           delete $scope.filterSelectItem;
           Object.keys($scope.controlMap).forEach(function (key) {
@@ -966,7 +976,8 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
           return;
         }
 
-        if (!$scope.controlMap['0']) initialize();
+        // if (!$scope.controlMap['0']) 
+        initialize();
       });
 
       $transclude(function (transcludeElement) {
@@ -999,7 +1010,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
       if (!$scope._attributes[0]) return;
       var getElm = function getElm(string) {
-        return angular.element(document.getElementById(string));
+        return angular.element($element.find('#' + string));
       };
       var initialize = function initialize(_) {
         $scope.controlMap['0'] = QueryModelFactory.create({ attribute: {}, condition: {}, value: '' }, true, 'NOTHING', zIndexInitial--);
@@ -1114,7 +1125,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       function getIndexScope() {
         var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
-        var desiredScope = angular.element(document.getElementById('first')).scope();
+        var desiredScope = angular.element($element.find('#first')).scope();
         while (desiredScope.$index != index) {
           if (desiredScope.$$nextSibling == null) break;
           desiredScope = desiredScope.$$nextSibling;
@@ -1186,7 +1197,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       function showInput() {
         $scope.saveFilterOpen = true;
         $timeout(function () {
-          return document.getElementById('_save').focus();
+          return $element.find('$_save').focus();
         });
       }
 
