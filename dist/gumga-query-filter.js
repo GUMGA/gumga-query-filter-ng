@@ -249,10 +249,13 @@ function Search($q, $timeout, $compile, $interpolate) {
         });
 
         result.forEach(function (field, index) {
-          var criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? '' : param);
-          if (ctrl.mapFields[field].type == 'number') {
+          var criteria = null;
+          if (param != undefined && param != null) {
+            criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? '' : param);
+          }
+          if (ctrl.mapFields[field].type == 'number' && param != undefined && param != null) {
             criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? 0 : Number(param));
-          } else if (ctrl.mapFields[field].type == 'date') {
+          } else if (ctrl.mapFields[field].type == 'date' && param) {
             criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? new Date() : new Date(param));
           } else if (ctrl.mapFields[field].type == 'string') {
             criteria.setFieldFunction('%s');

@@ -187,10 +187,13 @@
             })
 
             result.forEach((field, index) => {
-              let criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? '' : param);
-              if(ctrl.mapFields[field].type == 'number') {
+              let criteria = null;
+              if(param != undefined && param != null){
+                criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? '' : param);
+              }
+              if(ctrl.mapFields[field].type == 'number' && param != undefined && param != null) {
                 criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? 0 : Number(param));
-              } else if(ctrl.mapFields[field].type == 'date') {
+              } else if(ctrl.mapFields[field].type == 'date' && param) {
                 criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? new Date() : new Date(param));
               } else if(ctrl.mapFields[field].type == 'string') {
                   criteria.setFieldFunction('%s');
@@ -207,11 +210,12 @@
                 }
               }
               
-              if(index == 0){
+              if(index == 0){ 
                 query = new GQuery(criteria);
               }else{
                 query = query.or(criteria);
               }
+
             });
 
             innerJoins.forEach(function(innerJoin) {
