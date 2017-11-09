@@ -312,7 +312,6 @@ function HQLFactory($filter){
       }
       query = query[previousValue.query.value.toLowerCase()](createCriteriaLower(querys[i].query, value));
     }
-
     return query;
   }
 

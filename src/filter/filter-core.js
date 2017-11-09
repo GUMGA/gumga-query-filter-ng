@@ -248,9 +248,8 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
               scope.$value.active = false;
               delete $scope.controlMap[key]
               $timeout(_ => scope.$destroy())
-            })
-
-          $scope.search({ param: {} });
+            });
+          $scope.search({ param: new GQuery() });
           return
         }
 

@@ -266,7 +266,7 @@ function Search($q, $timeout, $compile, $interpolate, $rootScope) {
             criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? 0 : Number(param));
           } else if (ctrl.mapFields[field].type == 'date' && param) {
             criteria = new Criteria(field, getComparisonOperatorByType(field), param == undefined || param == null ? new Date() : new Date(param));
-          } else if (ctrl.mapFields[field].type == 'string') {
+          } else if (ctrl.mapFields[field].type == 'string' && criteria) {
             criteria.setFieldFunction('%s');
             criteria.setValueFunction('%s');
 
@@ -664,7 +664,6 @@ function HQLFactory($filter) {
       }
       query = query[previousValue.query.value.toLowerCase()](createCriteriaLower(querys[i].query, _value));
     }
-
     return query;
   }
 
@@ -971,8 +970,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
               return scope.$destroy();
             });
           });
-
-          $scope.search({ param: {} });
+          $scope.search({ param: new GQuery() });
           return;
         }
 
