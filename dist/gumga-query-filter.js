@@ -964,11 +964,13 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
           delete $scope.filterSelectItem;
           Object.keys($scope.controlMap).forEach(function (key) {
             var scope = getIndexScope(key);
-            scope.$value.active = false;
-            delete $scope.controlMap[key];
-            $timeout(function (_) {
-              return scope.$destroy();
-            });
+            if (scope) {
+              scope.$value.active = false;
+              delete $scope.controlMap[key];
+              $timeout(function (_) {
+                return scope.$destroy();
+              });
+            }
           });
           $scope.search({ param: new GQuery() });
           return;
@@ -1124,9 +1126,11 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
         var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
         var desiredScope = angular.element($element.find('#first')).scope();
-        while (desiredScope.$index != index) {
-          if (desiredScope.$$nextSibling == null) break;
-          desiredScope = desiredScope.$$nextSibling;
+        if (desiredScope) {
+          while (desiredScope.$index != index) {
+            if (desiredScope.$$nextSibling == null) break;
+            desiredScope = desiredScope.$$nextSibling;
+          }
         }
         return desiredScope;
       }
@@ -1257,31 +1261,33 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
         if (e.keyCode === 27) {
           Object.keys($scope.controlMap).forEach(function (key) {
             var scope = getIndexScope(key);
-            if (scope.$value.activeStates !== 8) {
-              if (scope.$$prevSibling.$key) {
-                scope.$$prevSibling.$value.active = false;
-                delete $scope.controlMap[scope.$$prevSibling.$key];
-                $timeout(function () {
-                  return scope.$$prevSibling.$destroy();
-                });
-              } else if (scope.$$nextSibling.$key) {
-                scope.$$nextSibling.$value.active = false;
-                delete $scope.controlMap[scope.$$nextSibling.$key];
-                $timeout(function () {
-                  return scope.$$nextSibling.$destroy();
-                });
-              } else if (scope.$$prevSibling.$key && scope.$$nextSibling.$key) {
-                scope.$$nextSibling.$value.active = false;
-                delete $scope.controlMap[scope.$$nextSibling.$key];
-                $timeout(function () {
-                  return scope.$$nextSibling.$destroy();
+            if (scope) {
+              if (scope.$value.activeStates !== 8) {
+                if (scope.$$prevSibling.$key) {
+                  scope.$$prevSibling.$value.active = false;
+                  delete $scope.controlMap[scope.$$prevSibling.$key];
+                  $timeout(function () {
+                    return scope.$$prevSibling.$destroy();
+                  });
+                } else if (scope.$$nextSibling.$key) {
+                  scope.$$nextSibling.$value.active = false;
+                  delete $scope.controlMap[scope.$$nextSibling.$key];
+                  $timeout(function () {
+                    return scope.$$nextSibling.$destroy();
+                  });
+                } else if (scope.$$prevSibling.$key && scope.$$nextSibling.$key) {
+                  scope.$$nextSibling.$value.active = false;
+                  delete $scope.controlMap[scope.$$nextSibling.$key];
+                  $timeout(function () {
+                    return scope.$$nextSibling.$destroy();
+                  });
+                }
+                scope.$value.active = false;
+                delete $scope.controlMap[key];
+                $timeout(function (_) {
+                  return scope.$destroy();
                 });
               }
-              scope.$value.active = false;
-              delete $scope.controlMap[key];
-              $timeout(function (_) {
-                return scope.$destroy();
-              });
             }
           });
         }

@@ -40,7 +40,6 @@
               <div class="col-md-6">
                 <gumga-query use-gquery="true"
                             search="searchWithGQuery(param)"
-                            advanced-search="searchWithGQuery(param)" 
                             search-text="Pesquisar"
                             saved-filters="apresentacoes.methods.getQuery(page)" 
                             save-query="apresentacoes.methods.postQuery(query, name)">
@@ -49,10 +48,10 @@
                 <search-field type="string" field="name" label="Nome"></search-field>
                 <search-field type="string" inner-join="obj.product as p" field="p.apelido" label="Apelido"></search-field>
 
-                <advanced-search-field type="string" field="name"></advanced-search-field>
+                <!-- <advanced-search-field type="string" field="name"></advanced-search-field>
                 <advanced-search-field type="number" label="Id" field="id"></advanced-search-field>
                 <advanced-search-field type="date" label="Editado em" field="editedByLast"></advanced-search-field>
-                <advanced-search-field type="boolean" label="hidden" field="hidden"></advanced-search-field>
+                <advanced-search-field type="boolean" label="hidden" field="hidden"></advanced-search-field> -->
                 </gumga-query>
               </div>
             </div>

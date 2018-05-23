@@ -210,9 +210,9 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       $scope.$on('filter-items', (err, data) => {
         let value = JSON.parse(data.value)
         $scope.controlMap = {}
-        if($scope.useGquery){
+        if ($scope.useGquery) {
           $timeout(() => $scope.search({ param: value }));
-        }else{
+        } else {
           JSON.parse(value.source).forEach((val, index) => {
             if (index % 2 == 0) {
               $scope.controlMap[index] = QueryModelFactory.create(val, true, 'EVERYTHING_NEEDED', zIndexInitial--)
@@ -226,28 +226,30 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       })
 
       $scope.getTextQuery = ($value) => {
-         var toReturn = 'valor';
-         if($value && $value.query && $value.query.attribute){
-           if($value.query.attribute.type && $value.query.attribute.type == 'select' && $value.query.value != undefined && $value.query.value != null){
-             let data = $value.query.attribute.extraProperties.data.filter(data => data.field == $value.query.value);
-             if(data.length > 0){
-               return data[0].label;
-             }
-           }
-           toReturn = $filter('gumgaGenericFilter')(($value.query.value ? $value.query.value.push && $value.query.value.length > 0  ? $value.query.value.join(', ') : $value.query.value : 'valor'), $value.query.attribute.type);
-         }
-         return toReturn;
+        var toReturn = 'valor';
+        if ($value && $value.query && $value.query.attribute) {
+          if ($value.query.attribute.type && $value.query.attribute.type == 'select' && $value.query.value != undefined && $value.query.value != null) {
+            let data = $value.query.attribute.extraProperties.data.filter(data => data.field == $value.query.value);
+            if (data.length > 0) {
+              return data[0].label;
+            }
+          }
+          toReturn = $filter('gumgaGenericFilter')(($value.query.value ? $value.query.value.push && $value.query.value.length > 0 ? $value.query.value.join(', ') : $value.query.value : 'valor'), $value.query.attribute.type);
+        }
+        return toReturn;
       }
 
-      $scope.$on('openOrCloseFilter'+$scope.uid, (event, openOrClose) => {
+      $scope.$on('openOrCloseFilter' + $scope.uid, (event, openOrClose) => {
         if (!openOrClose) {
           delete $scope.filterSelectItem;
           Object.keys($scope.controlMap)
             .forEach(key => {
               const scope = getIndexScope(key)
-              scope.$value.active = false;
-              delete $scope.controlMap[key]
-              $timeout(_ => scope.$destroy())
+              if (scope) {
+                scope.$value.active = false;
+                delete $scope.controlMap[key]
+                $timeout(_ => scope.$destroy())
+              }
             });
           $scope.search({ param: new GQuery() });
           return
@@ -287,7 +289,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       })
 
       if (!$scope._attributes[0]) return;
-      const getElm = string => angular.element($element.find('#'+string))
+      const getElm = string => angular.element($element.find('#' + string))
       const initialize = _ => {
         $scope.controlMap['0'] = QueryModelFactory.create({ attribute: {}, condition: {}, value: '' }, true, 'NOTHING', zIndexInitial--)
 
@@ -394,9 +396,9 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       function isAnyQueryNotOk() {
         return Object.keys($scope.controlMap).filter((intern) => {
           return (!$scope.controlMap[intern].isEVERYTHING_NEEDED()
-          || $scope.controlMap[intern].isUPDATING_ATTRIBUTE()
-          || $scope.controlMap[intern].isUPDATING_CONDITION()
-          || $scope.controlMap[intern].isUPDATING_VALUE()) && $scope.controlMap[intern].active
+            || $scope.controlMap[intern].isUPDATING_ATTRIBUTE()
+            || $scope.controlMap[intern].isUPDATING_CONDITION()
+            || $scope.controlMap[intern].isUPDATING_VALUE()) && $scope.controlMap[intern].active
         }).filter(value => (parseInt(value) % 2 == 0)).length === 0
       }
 
@@ -405,10 +407,12 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       }
 
       function getIndexScope(index = 0) {
-        let desiredScope = angular.element($element.find('#first')).scope()
-        while (desiredScope.$index != index) {
-          if (desiredScope.$$nextSibling == null) break;
-          desiredScope = desiredScope.$$nextSibling
+        let desiredScope = angular.element($element.find('#first')).scope();
+        if (desiredScope) {
+          while (desiredScope.$index != index) {
+            if (desiredScope.$$nextSibling == null) break;
+            desiredScope = desiredScope.$$nextSibling
+          }
         }
         return desiredScope
       }
@@ -535,23 +539,25 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
           Object.keys($scope.controlMap)
             .forEach(key => {
               const scope = getIndexScope(key)
-              if (scope.$value.activeStates !== 8) {
-                if (scope.$$prevSibling.$key) {
-                  scope.$$prevSibling.$value.active = false
-                  delete $scope.controlMap[scope.$$prevSibling.$key]
-                  $timeout(() => (scope.$$prevSibling.$destroy()))
-                } else if (scope.$$nextSibling.$key) {
-                  scope.$$nextSibling.$value.active = false
-                  delete $scope.controlMap[scope.$$nextSibling.$key]
-                  $timeout(() => (scope.$$nextSibling.$destroy()))
-                } else if (scope.$$prevSibling.$key && scope.$$nextSibling.$key) {
-                  scope.$$nextSibling.$value.active = false
-                  delete $scope.controlMap[scope.$$nextSibling.$key]
-                  $timeout(() => (scope.$$nextSibling.$destroy()))
+              if (scope) {
+                if (scope.$value.activeStates !== 8) {
+                  if (scope.$$prevSibling.$key) {
+                    scope.$$prevSibling.$value.active = false
+                    delete $scope.controlMap[scope.$$prevSibling.$key]
+                    $timeout(() => (scope.$$prevSibling.$destroy()))
+                  } else if (scope.$$nextSibling.$key) {
+                    scope.$$nextSibling.$value.active = false
+                    delete $scope.controlMap[scope.$$nextSibling.$key]
+                    $timeout(() => (scope.$$nextSibling.$destroy()))
+                  } else if (scope.$$prevSibling.$key && scope.$$nextSibling.$key) {
+                    scope.$$nextSibling.$value.active = false
+                    delete $scope.controlMap[scope.$$nextSibling.$key]
+                    $timeout(() => (scope.$$nextSibling.$destroy()))
+                  }
+                  scope.$value.active = false
+                  delete $scope.controlMap[key]
+                  $timeout(_ => scope.$destroy())
                 }
-                scope.$value.active = false
-                delete $scope.controlMap[key]
-                $timeout(_ => scope.$destroy())
               }
             })
         }
