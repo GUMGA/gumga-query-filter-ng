@@ -962,7 +962,7 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
       $scope.$on('openOrCloseFilter' + $scope.uid, function (event, openOrClose) {
         if (!openOrClose) {
           delete $scope.filterSelectItem;
-          Object.keys($scope.controlMap).forEach(function (key) {
+          Object.keys($scope.controlMap || []).forEach(function (key) {
             var scope = getIndexScope(key);
             if (scope) {
               scope.$value.active = false;
@@ -1259,23 +1259,23 @@ function Filter(HQLFactory, $compile, $timeout, $interpolate, QueryModelFactory,
 
       document.addEventListener('keyup', function (e) {
         if (e.keyCode === 27) {
-          Object.keys($scope.controlMap).forEach(function (key) {
+          Object.keys($scope.controlMap || []).forEach(function (key) {
             var scope = getIndexScope(key);
             if (scope) {
-              if (scope.$value.activeStates !== 8) {
-                if (scope.$$prevSibling.$key) {
+              if (scope.$value && scope.$value.activeStates !== 8) {
+                if (scope.$$prevSibling && scope.$$prevSibling.$key) {
                   scope.$$prevSibling.$value.active = false;
                   delete $scope.controlMap[scope.$$prevSibling.$key];
                   $timeout(function () {
                     return scope.$$prevSibling.$destroy();
                   });
-                } else if (scope.$$nextSibling.$key) {
+                } else if (scope.$$nextSibling && scope.$$nextSibling.$key) {
                   scope.$$nextSibling.$value.active = false;
                   delete $scope.controlMap[scope.$$nextSibling.$key];
                   $timeout(function () {
                     return scope.$$nextSibling.$destroy();
                   });
-                } else if (scope.$$prevSibling.$key && scope.$$nextSibling.$key) {
+                } else if (scope.$$prevSibling && scope.$$prevSibling.$key && scope.$$nextSibling.$key) {
                   scope.$$nextSibling.$value.active = false;
                   delete $scope.controlMap[scope.$$nextSibling.$key];
                   $timeout(function () {
